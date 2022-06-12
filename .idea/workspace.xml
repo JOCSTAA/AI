@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="7f2c407e-8cea-4d15-99d8-048b313a1319" name="Default Changelist" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectId" id="1r7vU9Gfp2IunEI2GhqJtfyJFWi" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\josho\Desktop\AI\Redacted" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Python.Brain">
+    <configuration name="Audio" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="AI" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="C:\Users\josho\anaconda3\envs\gym\python.exe" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Audio.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Brain" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="AI" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="C:\Users\josho\Desktop\AI\Brain.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Speak" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="AI" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Speak.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="scratch" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="AI" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scratch.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="test" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="AI" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="test_speak" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="AI" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test_speak.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.Brain" />
+        <item itemvalue="Python.test" />
+        <item itemvalue="Python.test_speak" />
+        <item itemvalue="Python.scratch" />
+        <item itemvalue="Python.Speak" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="7f2c407e-8cea-4d15-99d8-048b313a1319" name="Default Changelist" comment="" />
+      <created>1618339955820</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1618339955820</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="5854" y="355" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1652585103678">
+      <screen x="5120" y="0" width="2560" height="1400" />
+    </state>
+    <state x="5854" y="355" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@5120.0.2560.1400" timestamp="1652585103678" />
+    <state x="3601" y="503" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1653235967955">
+      <screen x="2560" y="0" width="2560" height="1400" />
+    </state>
+    <state x="1041" y="503" key="#com.intellij.fileTypes.FileTypeChooser/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@0.0.2560.1400" timestamp="1652574737896" />
+    <state x="3601" y="503" key="#com.intellij.fileTypes.FileTypeChooser/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1653235967955" />
+    <state x="3570" y="447" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1653797183279">
+      <screen x="2560" y="0" width="2560" height="1400" />
+    </state>
+    <state x="3570" y="447" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1653797183279" />
+    <state x="1060" y="455" key="FileChooserDialogImpl" timestamp="1652574811500">
+      <screen x="0" y="0" width="2560" height="1400" />
+    </state>
+    <state x="1060" y="455" key="FileChooserDialogImpl/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@0.0.2560.1400" timestamp="1652574811500" />
+    <state width="2539" height="738" key="GridCell.Tab.0.bottom" timestamp="1655001120252">
+      <screen x="2560" y="0" width="2560" height="1400" />
+    </state>
+    <state width="1256" height="399" key="GridCell.Tab.0.bottom/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@0.0.2560.1400" timestamp="1653331970109" />
+    <state width="2539" height="738" key="GridCell.Tab.0.bottom/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1655001120252" />
+    <state width="2539" height="400" key="GridCell.Tab.0.bottom/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@5120.0.2560.1400" timestamp="1652586167702" />
+    <state width="2539" height="738" key="GridCell.Tab.0.center" timestamp="1655001120252">
+      <screen x="2560" y="0" width="2560" height="1400" />
+    </state>
+    <state width="1256" height="399" key="GridCell.Tab.0.center/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@0.0.2560.1400" timestamp="1653331970108" />
+    <state width="2539" height="738" key="GridCell.Tab.0.center/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1655001120252" />
+    <state width="2539" height="400" key="GridCell.Tab.0.center/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@5120.0.2560.1400" timestamp="1652586167702" />
+    <state width="2539" height="738" key="GridCell.Tab.0.left" timestamp="1655001120252">
+      <screen x="2560" y="0" width="2560" height="1400" />
+    </state>
+    <state width="1256" height="399" key="GridCell.Tab.0.left/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@0.0.2560.1400" timestamp="1653331970108" />
+    <state width="2539" height="738" key="GridCell.Tab.0.left/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1655001120252" />
+    <state width="2539" height="400" key="GridCell.Tab.0.left/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@5120.0.2560.1400" timestamp="1652586167702" />
+    <state width="2539" height="738" key="GridCell.Tab.0.right" timestamp="1655001120252">
+      <screen x="2560" y="0" width="2560" height="1400" />
+    </state>
+    <state width="1256" height="399" key="GridCell.Tab.0.right/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@0.0.2560.1400" timestamp="1653331970108" />
+    <state width="2539" height="738" key="GridCell.Tab.0.right/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1655001120252" />
+    <state width="2539" height="400" key="GridCell.Tab.0.right/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@5120.0.2560.1400" timestamp="1652586167702" />
+    <state width="2539" height="492" key="GridCell.Tab.1.bottom" timestamp="1653328471417">
+      <screen x="2560" y="0" width="2560" height="1400" />
+    </state>
+    <state width="2539" height="492" key="GridCell.Tab.1.bottom/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1653328471417" />
+    <state width="2539" height="492" key="GridCell.Tab.1.center" timestamp="1653328471417">
+      <screen x="2560" y="0" width="2560" height="1400" />
+    </state>
+    <state width="2539" height="492" key="GridCell.Tab.1.center/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1653328471417" />
+    <state width="2539" height="492" key="GridCell.Tab.1.left" timestamp="1653328471417">
+      <screen x="2560" y="0" width="2560" height="1400" />
+    </state>
+    <state width="2539" height="492" key="GridCell.Tab.1.left/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1653328471417" />
+    <state width="2539" height="492" key="GridCell.Tab.1.right" timestamp="1653328471417">
+      <screen x="2560" y="0" width="2560" height="1400" />
+    </state>
+    <state width="2539" height="492" key="GridCell.Tab.1.right/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1653328471417" />
+    <state x="3341" y="342" key="SettingsEditor" timestamp="1653234134255">
+      <screen x="2560" y="0" width="2560" height="1400" />
+    </state>
+    <state x="3341" y="342" key="SettingsEditor/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1653234134255" />
+    <state x="5901" y="342" key="SettingsEditor/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@5120.0.2560.1400" timestamp="1652585135848" />
+    <state x="3536" y="524" key="com.intellij.ide.util.TipDialog" timestamp="1654968531880">
+      <screen x="2560" y="0" width="2560" height="1400" />
+    </state>
+    <state x="976" y="524" key="com.intellij.ide.util.TipDialog/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@0.0.2560.1400" timestamp="1652570733029" />
+    <state x="3536" y="524" key="com.intellij.ide.util.TipDialog/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1654968531880" />
+    <state x="3503" y="315" width="672" height="678" key="search.everywhere.popup" timestamp="1653796378799">
+      <screen x="2560" y="0" width="2560" height="1400" />
+    </state>
+    <state x="3503" y="315" width="672" height="678" key="search.everywhere.popup/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1653796378799" />
+  </component>
+</project>
