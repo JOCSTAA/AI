@@ -19,7 +19,7 @@ class Brain():
                  learning_rate=0.003,
                  action_space=10):
         self.action_space = action_space
-        self.model = self.create_model(eyes_input_shape, ears_input_shape, lstm_timestep, learning_rate)
+        self.actor, self.critic = self.create_model(eyes_input_shape, ears_input_shape, lstm_timestep, learning_rate)
 
     def ppo_loss(self, y_true, y_pred):
         advantages, actions, old_log_probs, = y_true[:, :1], y_true[:, 1:1 + self.action_space], y_true[:,
@@ -142,6 +142,5 @@ class Brain():
         critic.summary()
 
         return actor, critic
-
 
 brain = Brain()
