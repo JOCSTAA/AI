@@ -2,6 +2,13 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
+from keras import backend as K
+
+
+def gaussian_likelihood(actions, pred):
+    log_std = -0.5 * np.ones(6, dtype=np.float32)
+    pre_sum = -0.5 * (((actions - pred) / (K.exp(log_std) + 1e-8)) ** 2 + 2 * log_std + K.log(2 * np.pi))
+    return K.sum(pre_sum, axis=1)
 
 
 class Brain():
@@ -9,8 +16,26 @@ class Brain():
                  eyes_input_shape=(256, 256, 3),
                  ears_input_shape=(256, 256, 3),
                  lstm_timestep=10,
-                 learning_rate=0.003):
+                 learning_rate=0.003,
+                 action_space=10):
+        self.action_space = action_space
         self.model = self.create_model(eyes_input_shape, ears_input_shape, lstm_timestep, learning_rate)
+
+    def ppo_loss(self, y_true, y_pred):
+        advantages, actions, old_log_probs, = y_true[:, :1], y_true[:, 1:1 + self.action_space], y_true[:,
+                                                                                                 1 + self.action_space]
+        loss_clipping_parameter = 0.2
+        new_log_probs = gaussian_likelihood(actions, y_pred)
+
+        ratio = K.exp(new_log_probs - old_log_probs)
+
+        p1 = ratio * advantages
+        p2 = tf.where(advantages > 0, (1.0 + loss_clipping_parameter) * advantages,
+                      (1.0 - loss_clipping_parameter) * advantages)  # minimum advantage
+
+        actor_loss = -K.mean(K.minimum(p1, p2))
+
+        return actor_loss
 
     def create_model(self, eyes_input_shape, ears_input_shape, time_step, learning_rate):
         # ====================================================================================================================
@@ -59,12 +84,12 @@ class Brain():
         dense2 = layers.Dense(64, activation='relu')(dense1)
 
         # OUTPUT=============================================================================================================
-        output = layers.Dense(12, activation='tanh')(dense2)
+        output = layers.Dense(self.action_space, activation='tanh')(dense2)
 
         # compile model =====================================================================================================
         actor = keras.Model(inputs=[eyes_input, ears_input], outputs=output, name="actor")
         actor.compile(
-            loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),  # INPUT PPO LOSS HERE!!
+            loss=self.ppo_loss,
             optimizer=keras.optimizers.Adam(lr=learning_rate)
         )
 
