@@ -2,9 +2,10 @@ import Input
 import Output
 import Brain
 
+lstm_cnt = 5
 inputs = Input.Input()
 outputs = Output.Output()
-brain = Brain.brain()
+brain = Brain.Brain(lstm_timestep=lstm_cnt)
 
 # Initialize ==========================================================================================================
 initialize_param = 100
@@ -17,13 +18,16 @@ for _ in range(initialize_param):
     batch.append([observation, action])  # add reward
 # =====================================================================================================================
 while True:
-    if not brain.done_training:
+    if brain.training:
         observation = inputs.observe()
-        action = brain.predict(observation)
+        action = brain.predict(observation) # try to keep around 40ms or less
         outputs.act(action)
 
         batch.append([observation, action]) # add reward
 
     else:
-        brain.train(batch)
-        batch = []
+        brain.update_model()
+        brain.training = False
+
+        #DO ALL THIS IN UPDAT MODEL
+

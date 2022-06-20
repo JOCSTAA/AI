@@ -1,146 +1,107 @@
-import numpy as np
-import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras import layers
-from keras import backend as K
+import random
+from model import LaWV
 
+import torch
+import torch.optim as optim
+import copy
+from threading import Thread
 
-def gaussian_likelihood(actions, pred):
-    log_std = -0.5 * np.ones(6, dtype=np.float32)
-    pre_sum = -0.5 * (((actions - pred) / (K.exp(log_std) + 1e-8)) ** 2 + 2 * log_std + K.log(2 * np.pi))
-    return K.sum(pre_sum, axis=1)
+use_cuda = torch.cuda.is_available()
+device = torch.device("cuda" if use_cuda else "cpu")
 
 
 class Brain():
     def __init__(self,
-                 eyes_input_shape=(256, 256, 3),
-                 ears_input_shape=(256, 256, 3),
+                 eyes_input_shape=(256, 256, 3),  # update to actual eye shape no resize
+                 ears_input_shape=(20, 17),  # update to actual ear shape
                  lstm_timestep=10,
                  learning_rate=0.003,
-                 action_space=10):
+                 action_space=10,
+                 epoch=5):
+        self.epoch = epoch
         self.action_space = action_space
-        self.actor, self.critic = self.create_model(eyes_input_shape, ears_input_shape, lstm_timestep, learning_rate)
+        self.batch_being_filled = []
+        self.batch_being_trained = []
+        self.training = False
+        self.alive = True
+        self.thread = Thread(target=self.train_thread)
+        self.thread.start()
+        self.loss_clip_parameter = 0.2
+        self.entropy_coefficient = 0.001
+        self.value_coefficient = 0.5
 
-    def ppo_loss(self, y_true, y_pred):
-        advantages, actions, old_log_probs, = y_true[:, :1], y_true[:, 1:1 + self.action_space], y_true[:,
-                                                                                                 1 + self.action_space]
-        loss_clipping_parameter = 0.2
-        new_log_probs = gaussian_likelihood(actions, y_pred)
+        # self.model_in_training = LAV(6, 2, 6).to(device)
+        self.model_in_training = LaWV(eyes_input_shape, ears_input_shape, action_space, lstm_timestep=lstm_timestep).to(
+            device)
+        self.current_model = copy.deepcopy(self.model_in_training)
+        self.optimizer = optim.Adam(self.model_in_training.parameters(), lr=learning_rate)
 
-        ratio = K.exp(new_log_probs - old_log_probs)
+    # PPO LOSS FUNCTION
+    def train_model(self):
+        random.shuffle(self.batch_being_trained)
+        for _ in range(self.epoch):
+            for unit in self.batch_being_trained:
+                state, action, old_log_probabilities, discounted_reward, advantage = unit
+                dist, value = self.model_in_training(state)
 
-        p1 = ratio * advantages
-        p2 = tf.where(advantages > 0, (1.0 + loss_clipping_parameter) * advantages,
-                      (1.0 - loss_clipping_parameter) * advantages)  # minimum advantage
+                advantage = advantage.detach()
+                old_log_probabilities = old_log_probabilities.detach()
+                value = value.detach()
 
-        actor_loss = -K.mean(K.minimum(p1, p2))
+                entropy = dist.entropy().mean()
+                new_log_probs = dist.log_prob(action)
 
-        return actor_loss
+                ratio = (new_log_probs - old_log_probabilities).exp()
+                surr1 = ratio * advantage
+                surr2 = torch.clamp(ratio, 1.0 - self.loss_clip_parameter,
+                                    1.0 + self.loss_clip_parameter) * advantage
 
-    def create_model(self, eyes_input_shape, ears_input_shape, time_step, learning_rate):
-        # ====================================================================================================================
-        # INPUT
-        # ====================================================================================================================
-        eyes_input_shape = tuple([time_step] + list(eyes_input_shape))
-        eyes_input = keras.Input(
-            shape=eyes_input_shape)  # example: shape = (10, 256, 256, 3) for a 10 sequential time 256 by 256 RGB image
+                actor_loss = - torch.min(surr1, surr2).mean()
+                value_loss = (discounted_reward - value).pow(2).mean()
 
-        ears_input_shape = tuple([time_step] + list(ears_input_shape))
-        ears_input = keras.Input(
-            shape=ears_input_shape)  # example: shape = (10, 256, 256, 3) for a 10 sequential time 256 by 256 RGB image
+                loss = (self.value_coefficient * value_loss) + actor_loss - (self.entropy_coefficient * entropy)
 
-        # ====================================================================================================================
-        # ACTOR
-        # ====================================================================================================================
-        # EYES===============================================================================================================
-        eyes_conv_neurons = layers.TimeDistributed(layers.Conv2D(32, 3, activation="relu", padding="same"))(eyes_input)
-        eyes_conv_neurons = layers.TimeDistributed(layers.MaxPooling2D(pool_size=(2, 2), padding="same"))(
-            eyes_conv_neurons)
-        eyes_conv_neurons = layers.TimeDistributed(layers.Conv2D(64, 5, activation="relu", padding="same"))(
-            eyes_conv_neurons)
-        eyes_conv_neurons = layers.TimeDistributed(layers.MaxPooling2D(pool_size=(2, 2), padding="same"))(
-            eyes_conv_neurons)
+                self.optimizer.zero_grad()
+                loss.backward()
+                self.optimizer.step()
 
-        # EARS===============================================================================================================
-        ears_conv_neurons = layers.TimeDistributed(layers.Conv2D(32, 3, activation="relu", padding="same"))(ears_input)
-        ears_conv_neurons = layers.TimeDistributed(layers.MaxPooling2D(pool_size=(2, 2), padding="same"))(
-            ears_conv_neurons)
-        ears_conv_neurons = layers.TimeDistributed(layers.Conv2D(64, 5, activation="relu", padding="same"))(
-            ears_conv_neurons)
-        ears_conv_neurons = layers.TimeDistributed(layers.MaxPooling2D(pool_size=(2, 2), padding="same"))(
-            ears_conv_neurons)
+    # THIS FUNCTION IS THE ASYNCHRONOUS FUNCTION THAT WOULD KEEP RUNNING TILL LEARNING PROCESS IS TERMINATED
+    # IT INITIATES THE TRAINING OF THE NEW BATCH WHEN SELF.TRAINING IS TOGGLED FROM OFF TO ON
+    def train_thread(self):
+        while self.alive:
+            if self.training:
+                print("new_training")
+                self.train_model()
+                self.training = False
 
-        # MERGE EARS AND EYES NEURONS
-        eyes_conv_neurons = layers.TimeDistributed(layers.Flatten())(eyes_conv_neurons)
-        ears_conv_neurons = layers.TimeDistributed(layers.Flatten())(ears_conv_neurons)
-        merged = layers.Concatenate()([eyes_conv_neurons, ears_conv_neurons])
+    # USE THE CURRENT MODEL TO PREDICT THE REAL TIME STATES
+    # TRY TO KEEP THIS TIME OPTIMIZED, THIS IS DONE IN REAL TIME
+    def predict(self, observation):
+        dist, value = self.current_model(observation)
+        action = dist.sample()
+        log_prob = dist.log_prob(action)
 
-        # LSTM===============================================================================================================
-        lstm1 = layers.LSTM(10, return_sequences=True)(merged)
-        lstm2 = layers.LSTM(10, return_sequences=False)(lstm1)
+        # discounted_reward = compute_reward() # HAHA DEAL WITH THIS SHIII BOYYYYYYYY!
+        discounted_reward = 1
+        advantage = discounted_reward - value
 
-        # DENSE==============================================================================================================
-        dense1 = layers.Dense(64, activation='relu')(lstm2)
-        dense2 = layers.Dense(64, activation='relu')(dense1)
+        unit = [observation, action, log_prob, discounted_reward, advantage]
+        self.batch_being_filled.append(unit)
+        result = action.cpu().detach().numpy()[0]
+        return result
 
-        # OUTPUT=============================================================================================================
-        output = layers.Dense(self.action_space, activation='tanh')(dense2)
+    # PREVIOUS BATCH IS DONE TRAINING, TRAIN THE NEW BATCH:
+    # UPDATE THE MODEL FIRST THOUGH
+    # SO THAT THE CURRENT MODEL BEING USED TO PREDICT IS THE LATEST COPY
+    def update_model(self):
+        self.current_model = copy.deepcopy(self.model_in_training)
 
-        # compile model =====================================================================================================
-        actor = keras.Model(inputs=[eyes_input, ears_input], outputs=output, name="actor")
-        actor.compile(
-            loss=self.ppo_loss,
-            optimizer=keras.optimizers.Adam(lr=learning_rate)
-        )
+        self.batch_being_trained = self.batch_being_filled.copy()
+        self.training = True  # Initiates next training thread
 
-        actor.summary()
+        self.batch_being_filled = []
 
-        # ====================================================================================================================
-        # CRITIC
-        # ====================================================================================================================
-        # EYES===============================================================================================================
-        eyes_conv_neurons = layers.TimeDistributed(layers.Conv2D(32, 3, activation="relu", padding="same"))(eyes_input)
-        eyes_conv_neurons = layers.TimeDistributed(layers.MaxPooling2D(pool_size=(2, 2), padding="same"))(
-            eyes_conv_neurons)
-        eyes_conv_neurons = layers.TimeDistributed(layers.Conv2D(64, 5, activation="relu", padding="same"))(
-            eyes_conv_neurons)
-        eyes_conv_neurons = layers.TimeDistributed(layers.MaxPooling2D(pool_size=(2, 2), padding="same"))(
-            eyes_conv_neurons)
-
-        # EARS===============================================================================================================
-        ears_conv_neurons = layers.TimeDistributed(layers.Conv2D(32, 3, activation="relu", padding="same"))(ears_input)
-        ears_conv_neurons = layers.TimeDistributed(layers.MaxPooling2D(pool_size=(2, 2), padding="same"))(
-            ears_conv_neurons)
-        ears_conv_neurons = layers.TimeDistributed(layers.Conv2D(64, 5, activation="relu", padding="same"))(
-            ears_conv_neurons)
-        ears_conv_neurons = layers.TimeDistributed(layers.MaxPooling2D(pool_size=(2, 2), padding="same"))(
-            ears_conv_neurons)
-
-        # MERGE EARS AND EYES NEURONS
-        eyes_conv_neurons = layers.TimeDistributed(layers.Flatten())(eyes_conv_neurons)
-        ears_conv_neurons = layers.TimeDistributed(layers.Flatten())(ears_conv_neurons)
-        merged = layers.Concatenate()([eyes_conv_neurons, ears_conv_neurons])
-
-        # LSTM===============================================================================================================
-        lstm1 = layers.LSTM(10, return_sequences=True)(merged)
-        lstm2 = layers.LSTM(10, return_sequences=False)(lstm1)
-
-        # DENSE==============================================================================================================
-        dense1 = layers.Dense(64, activation='relu')(lstm2)
-        dense2 = layers.Dense(64, activation='relu')(dense1)
-
-        # OUTPUT=============================================================================================================
-        output = layers.Dense(1)(dense2)
-
-        # compile model =====================================================================================================
-        critic = keras.Model(inputs=[eyes_input, ears_input], outputs=output, name="critic")
-        critic.compile(
-            loss="mse",
-            optimizer=keras.optimizers.Adam(lr=learning_rate)
-        )
-
-        critic.summary()
-
-        return actor, critic
-
-brain = Brain()
+    # TERMINATES LEARNING PROCESS
+    def kill_brain(self):
+        self.alive = False
+        self.thread.join()
