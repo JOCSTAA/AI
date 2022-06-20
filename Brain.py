@@ -49,14 +49,14 @@ class Brain():
                 value = value.detach()
 
                 entropy = dist.entropy().mean()
-                new_log_probs = dist.log_prob(action)
+                new_log_probabilities = dist.log_prob(action)
 
-                ratio = (new_log_probs - old_log_probabilities).exp()
-                surr1 = ratio * advantage
-                surr2 = torch.clamp(ratio, 1.0 - self.loss_clip_parameter,
+                ratio = (new_log_probabilities - old_log_probabilities).exp()
+                surrogate1 = ratio * advantage
+                surrogate2 = torch.clamp(ratio, 1.0 - self.loss_clip_parameter,
                                     1.0 + self.loss_clip_parameter) * advantage
 
-                actor_loss = - torch.min(surr1, surr2).mean()
+                actor_loss = - torch.min(surrogate1, surrogate2).mean()
                 value_loss = (discounted_reward - value).pow(2).mean()
 
                 loss = (self.value_coefficient * value_loss) + actor_loss - (self.entropy_coefficient * entropy)

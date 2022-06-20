@@ -240,3 +240,294 @@ class LAV(nn.Module):  # LSTM, ACTOR, VALUE
 
 
 # Actual model
+
+import random
+from model import LaWV, LaV
+
+import torch
+import torch.optim as optim
+import copy
+from threading import Thread
+
+use_cuda = torch.cuda.is_available()
+device = torch.device("cuda" if use_cuda else "cpu")
+
+
+class Brain():
+    def __init__(self,
+                 eyes_input_shape=(256, 256, 3),  # update to actual eye shape no resize
+                 ears_input_shape=(20, 17),  # update to actual ear shape
+                 lstm_timestep=10,
+                 learning_rate=0.003,
+                 action_space=10,
+                 epoch=5):
+        self.epoch = epoch
+        self.action_space = action_space
+        self.batch_being_filled = []
+        self.batch_being_trained = []
+        self.training = False
+        self.alive = True
+        self.thread = Thread(target=self.train_thread)
+        self.thread.start()
+        self.loss_clip_parameter = 0.2
+        self.entropy_coefficient = 0.001
+        self.value_coefficient = 0.5
+
+        # self.model_in_training = LaWV(eyes_input_shape, ears_input_shape, action_space, lstm_timestep=lstm_timestep).to(
+        #     device)
+        # self.current_model = copy.deepcopy(self.model_in_training)
+        # self.optimizer = optim.Adam(self.model_in_training.parameters(), lr=learning_rate)
+
+        self.model_in_training = LaV(eyes_input_shape, ears_input_shape, action_space, lstm_timestep=lstm_timestep)
+        self.model_in_training.actor.to(device)
+        self.model_in_training.value.to(device)
+        self.current_actor_model = copy.deepcopy(self.model_in_training.actor)
+        self.current_value_model = copy.deepcopy(self.model_in_training.value)
+        self.actor_optimizer = optim.Adam(self.model_in_training.actor.parameters(), lr=learning_rate)
+        self.value_optimizer = optim.Adam(self.model_in_training.value.parameters(), lr=learning_rate)
+
+    # PPO LOSS FUNCTION
+    def train_model(self):
+        random.shuffle(self.batch_being_trained)
+        for _ in range(self.epoch):
+            for unit in self.batch_being_trained:
+                state, action, old_log_probabilities, discounted_reward, advantage = unit
+                # dist, value = self.model_in_training(state)
+
+                dist = self.model_in_training.actor(state)
+                value = self.model_in_training.value(state)
+
+                advantage = advantage.detach()
+                old_log_probabilities = old_log_probabilities.detach()
+                value = value.detach()
+
+                entropy = dist.entropy().mean()
+                new_log_probability = dist.log_prob(action)
+
+                ratio = (new_log_probability - old_log_probabilities).exp()
+                surrogate1 = ratio * advantage
+                surrogate2 = torch.clamp(ratio, 1.0 - self.loss_clip_parameter,
+                                    1.0 + self.loss_clip_parameter) * advantage
+
+                actor_loss = - torch.min(surrogate1, surrogate2).mean()
+                value_loss = (discounted_reward - value).pow(2).mean()
+
+                # loss = (self.value_coefficient * value_loss) + actor_loss - (self.entropy_coefficient * entropy)
+                #
+                # self.optimizer.zero_grad()
+                # loss.backward()
+                # self.optimizer.step()
+
+                actor_loss = actor_loss - (self.entropy_coefficient * entropy)
+                self.actor_optimizer.zero_grad()
+                self.value_optimizer.zero_grad()
+                actor_loss.backward()
+                value_loss.backward()
+                self.actor_optimizer.step()
+                self.value_optimizer.step()
+
+    # THIS FUNCTION IS THE ASYNCHRONOUS FUNCTION THAT WOULD KEEP RUNNING TILL LEARNING PROCESS IS TERMINATED
+    # IT INITIATES THE TRAINING OF THE NEW BATCH WHEN SELF.TRAINING IS TOGGLED FROM OFF TO ON
+    def train_thread(self):
+        while self.alive:
+            if self.training:
+                print("new_training")
+                self.train_model()
+                self.training = False
+
+    # USE THE CURRENT MODEL TO PREDICT THE REAL TIME STATES
+    # TRY TO KEEP THIS TIME OPTIMIZED, THIS IS DONE IN REAL TIME
+    def predict(self, observation):
+        # dist, value = self.current_model(observation)
+
+        dist = self.current_actor_model(observation)
+        value = self.current_value_model(observation)
+
+        action = dist.sample()
+        log_prob = dist.log_prob(action)
+
+        # discounted_reward = compute_reward() # HAHA DEAL WITH THIS SHIII BOYYYYYYYY!
+        discounted_reward = 1
+        advantage = discounted_reward - value
+
+        unit = [observation, action, log_prob, discounted_reward, advantage]
+        self.batch_being_filled.append(unit)
+        result = action.cpu().detach().numpy()[0]
+        return result
+
+    # PREVIOUS BATCH IS DONE TRAINING, TRAIN THE NEW BATCH:
+    # UPDATE THE MODEL FIRST THOUGH
+    # SO THAT THE CURRENT MODEL BEING USED TO PREDICT IS THE LATEST COPY
+    def update_model(self):
+        # self.current_model = copy.deepcopy(self.model_in_training)
+
+        self.current_actor_model = copy.deepcopy(self.model_in_training.actor)
+        self.current_value_model = copy.deepcopy(self.model_in_training.value)
+
+        self.batch_being_trained = self.batch_being_filled.copy()
+        self.training = True  # Initiates next training thread
+
+        self.batch_being_filled = []
+
+    # TERMINATES LEARNING PROCESS
+    def kill_brain(self):
+        self.alive = False
+        self.thread.join()
+
+
+class Actor(nn.Module):
+    def __init__(self, eyes_input_shape, ears_input_shape, action_space, lstm_timestep=10, std=0.0):
+        super(Actor, self).__init__()
+        self.lstm_timestep = lstm_timestep
+        # Define hyper parameters for models (example lstm_hidden layers, conv filters ...)
+
+        # CONVOLUTION LAYERS
+        self.actor_eyes_conv = nn.Sequential(
+            nn.Conv2d(eyes_input_shape[0], 32, (3, 3), padding="same"),
+            nn.ReLU(),
+            nn.MaxPool2d(2, padding=1),
+            nn.Conv2d(32, 64, (5, 5), padding="same"),
+            nn.ReLU(),
+            nn.MaxPool2d(2, padding=1),
+            nn.Flatten(),
+        )
+
+        self.actor_ears_conv = nn.Sequential(
+            nn.Conv1d(ears_input_shape[0], 32, 3, padding="same"),
+            nn.ReLU(),
+            nn.MaxPool1d(3, padding=1),
+            nn.Conv1d(32, 64, 5, padding="same"),
+            nn.ReLU(),
+            nn.MaxPool1d(3, padding=1),
+            nn.Flatten()
+        )
+
+        # LSTM
+        # the input size should change depending on the num of features
+        # ex: input of lstm = (batch, lstm_timestep, num_of_features), then input size = num_of_features
+        self.actor_lstm = nn.LSTM(input_size=8448, hidden_size=10, num_layers=5, batch_first=True)
+
+        # DENSE
+        self.actor_dense = nn.Sequential(
+            nn.Linear(10, 64),
+            nn.ReLU(),
+            nn.Linear(64, 64),
+            nn.ReLU()
+        )
+
+        # OUTPUT
+        self.actor_output = nn.Sequential(
+            nn.Linear(64, action_space),
+            nn.Tanh()
+        )
+
+        # UTILS
+        self.log_std = nn.Parameter(torch.ones(1, action_space) * std)
+        self.apply(self.init_weights)
+
+    def forward(self, observation):  # Works on single observation not batch
+        actor_lstm_input = []
+        for observation_frame in observation:
+            eye_input, ear_input = torch.FloatTensor([observation_frame[0]]), torch.FloatTensor([observation_frame[1]])
+            actor_eye_conv, actor_ear_conv = self.actor_eyes_conv(eye_input), self.actor_ears_conv(ear_input)
+
+            actor_merged = torch.cat((actor_eye_conv, actor_ear_conv), dim=1)
+            actor_lstm_input.append(actor_merged)
+
+        # ACTOR
+        actor_lstm_input = torch.stack(actor_lstm_input, dim=1)
+        # print(actor_lstm_input.shape[2])
+        actor_lstm, _ = self.actor_lstm(actor_lstm_input)
+
+        actor_dense = self.actor_dense(actor_lstm[:, -1, :])
+        actor_output = self.actor_output(actor_dense)
+
+        mu = actor_output
+        std = self.log_std.exp().expand_as(mu)
+        dist = Normal(mu, std)
+
+        return dist
+
+    def init_weights(self, m):
+        if isinstance(m, nn.Linear):
+            nn.init.normal_(m.weight, mean=0., std=0.1)
+            nn.init.constant_(m.bias, 0.1)
+
+
+
+class Value(nn.Module):
+    def __init__(self, eyes_input_shape, ears_input_shape, action_space, lstm_timestep=10, std=0.0):
+        super(Value, self).__init__()
+        self.lstm_timestep = lstm_timestep
+        # Define hyper parameters for models (example lstm_hidden layers, conv filters ...)
+
+        # CONVOLUTION LAYERS
+        self.value_eyes_conv = nn.Sequential(
+            nn.Conv2d(eyes_input_shape[0], 32, (3, 3), padding="same"),
+            nn.ReLU(),
+            nn.MaxPool2d(2, padding=1),
+            nn.Conv2d(32, 64, (5, 5), padding="same"),
+            nn.ReLU(),
+            nn.MaxPool2d(2, padding=1),
+            nn.Flatten(),
+        )
+
+        self.value_ears_conv = nn.Sequential(
+            nn.Conv1d(ears_input_shape[0], 32, 3, padding="same"),
+            nn.ReLU(),
+            nn.MaxPool1d(3, padding=1),
+            nn.Conv1d(32, 64, 5, padding="same"),
+            nn.ReLU(),
+            nn.MaxPool1d(3, padding=1),
+            nn.Flatten()
+        )
+
+        # LSTM
+        # the input size should change depending on the num of features
+        # ex: input of lstm = (batch, lstm_timestep, num_of_features), then input size = num_of_features
+        self.value_lstm = nn.LSTM(input_size=8448, hidden_size=10, num_layers=5, batch_first=True)
+
+        # DENSE
+        self.value_dense = nn.Sequential(
+            nn.Linear(10, 64),
+            nn.ReLU(),
+            nn.Linear(64, 64),
+            nn.ReLU()
+        )
+
+        # OUTPUT
+        self.value_output = nn.Sequential(
+            nn.Linear(64, 1)
+        )
+
+        # UTILS
+        self.log_std = nn.Parameter(torch.ones(1, action_space) * std)
+        self.apply(self.init_weights)
+
+    def forward(self, observation):  # Works on single observation not batch
+        value_lstm_input = []
+        for observation_frame in observation:
+            eye_input, ear_input = torch.FloatTensor([observation_frame[0]]), torch.FloatTensor([observation_frame[1]])
+            value_eye_conv, value_ear_conv = self.value_eyes_conv(eye_input), self.value_ears_conv(ear_input)
+
+            value_merged = torch.cat((value_eye_conv, value_ear_conv), dim=1)
+            value_lstm_input.append(value_merged)
+
+        # CRITIC
+        value_lstm_input = torch.stack(value_lstm_input, dim=1)
+        value_lstm, _ = self.value_lstm(value_lstm_input)
+
+        value_dense = self.value_dense(value_lstm[:, -1, :])
+        value_output = self.value_output(value_dense)
+
+        return value_output
+
+    def init_weights(self, m):
+        if isinstance(m, nn.Linear):
+            nn.init.normal_(m.weight, mean=0., std=0.1)
+            nn.init.constant_(m.bias, 0.1)
+
+class LaV():
+    def __init__(self, eyes_input_shape, ears_input_shape, action_space, lstm_timestep=10, std=0.0):
+        self.actor = Actor(eyes_input_shape, ears_input_shape, action_space, lstm_timestep=lstm_timestep, std=std)
+        self.value = Value(eyes_input_shape, ears_input_shape, action_space, lstm_timestep=lstm_timestep, std=std)
