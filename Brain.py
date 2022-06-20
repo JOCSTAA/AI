@@ -54,7 +54,7 @@ class Brain():
                 ratio = (new_log_probabilities - old_log_probabilities).exp()
                 surrogate1 = ratio * advantage
                 surrogate2 = torch.clamp(ratio, 1.0 - self.loss_clip_parameter,
-                                    1.0 + self.loss_clip_parameter) * advantage
+                                         1.0 + self.loss_clip_parameter) * advantage
 
                 actor_loss = - torch.min(surrogate1, surrogate2).mean()
                 value_loss = (discounted_reward - value).pow(2).mean()
