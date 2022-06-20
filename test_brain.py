@@ -32,7 +32,7 @@ def full_test():
 
     random_eye_array = np.random.randint(low=0, high=255, size=(256, 256, 3), dtype=np.uint8)
     random_ear_array = np.random.randint(low=0, high=255, size=(20, 17), dtype=np.uint8)
-    observation = [random_eye_array, random_ear_array]
+    observation = (random_eye_array, random_ear_array)
 
     initialize_param = 5
 

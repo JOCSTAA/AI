@@ -1,7 +1,9 @@
 import torch
 import torch.nn as nn
+import numpy as np
 
 from torch.distributions import Normal
+
 
 class LaWV(nn.Module):
     def __init__(self, eyes_input_shape, ears_input_shape, action_space, lstm_timestep=10, std=0.0):
@@ -89,7 +91,8 @@ class LaWV(nn.Module):
         actor_lstm_input = []
         value_lstm_input = []
         for observation_frame in observation:
-            eye_input, ear_input = torch.FloatTensor([observation_frame[0]]), torch.FloatTensor([observation_frame[1]])
+            eye_input, ear_input = torch.FloatTensor(np.array([observation_frame[0]])), torch.FloatTensor(
+                np.array([observation_frame[1]]))
             actor_eye_conv, actor_ear_conv = self.actor_eyes_conv(eye_input), self.actor_ears_conv(ear_input)
             value_eye_conv, value_ear_conv = self.value_eyes_conv(eye_input), self.value_ears_conv(ear_input)
 
