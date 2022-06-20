@@ -4,6 +4,7 @@
       <w>conv</w>
       <w>cuda</w>
       <w>lstm</w>
+      <w>minibatch</w>
       <w>timestep</w>
     </words>
   </dictionary>

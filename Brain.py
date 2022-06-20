@@ -4,6 +4,7 @@ from model import LaWV
 import torch
 import torch.optim as optim
 import copy
+import numpy as np
 from threading import Thread
 
 use_cuda = torch.cuda.is_available()
@@ -28,7 +29,8 @@ class Brain():
         self.thread.start()
         self.loss_clip_parameter = 0.2
         self.entropy_coefficient = 0.001
-        self.value_coefficient = 0.5
+        self.value_coefficient = 0.5,
+        self.minibatch_size = 32
 
         # self.model_in_training = LAV(6, 2, 6).to(device)
         self.model_in_training = LaWV(eyes_input_shape, ears_input_shape, action_space, lstm_timestep=lstm_timestep).to(
@@ -38,10 +40,9 @@ class Brain():
 
     # PPO LOSS FUNCTION
     def train_model(self):
-        random.shuffle(self.batch_being_trained)
         for _ in range(self.epoch):
-            for unit in self.batch_being_trained:
-                state, action, old_log_probabilities, discounted_reward, advantage = unit
+            for minibatch in self.yield_minibatches():
+                state, action, old_log_probabilities, discounted_reward, advantage = self.extract_elements(minibatch)
                 dist, value = self.model_in_training(state)
 
                 advantage = advantage.detach()
@@ -64,6 +65,16 @@ class Brain():
                 self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()
+
+    def yield_minibatches(self):
+        batch_size = len(self.batch_being_trained)
+        for _ in range(batch_size // self.minibatch_size):
+            rand_ids = np.random.randint(0, batch_size, self.minibatch_size)
+            yield self.batch_being_trained[rand_ids, :]
+
+    def extract_elements(self, minibatch):
+        minibatch = np.array(minibatch)
+        return minibatch[:,0], minibatch[:,1], minibatch[:,2], minibatch[:,3], minibatch[:,4]
 
     # THIS FUNCTION IS THE ASYNCHRONOUS FUNCTION THAT WOULD KEEP RUNNING TILL LEARNING PROCESS IS TERMINATED
     # IT INITIATES THE TRAINING OF THE NEW BATCH WHEN SELF.TRAINING IS TOGGLED FROM OFF TO ON
