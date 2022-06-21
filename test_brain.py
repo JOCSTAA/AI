@@ -1,5 +1,6 @@
 import numpy as np
-import Brain
+# import Brain
+import brain_tf
 
 
 # TEST BRAIN AGAINST simple test model
@@ -53,4 +54,34 @@ def full_test():
         else:
             brain.update_model()
 
-full_test()
+
+def full_test_tf():
+    lstm_cnt = 3
+
+    eye_shape, ear_shape = (256, 256, 3), (20, 17)
+    brain = brain_tf.Brain(lstm_timestep=lstm_cnt, eyes_input_shape=eye_shape, ears_input_shape= ear_shape)
+
+    random_eye_array = np.random.randint(low=0, high=255, size=eye_shape)
+    random_ear_array = np.random.randint(low=0, high=255, size=ear_shape)
+    observation = (random_eye_array, random_ear_array)
+
+    initialize_param = lstm_cnt
+
+    time_sequence_observation = []
+    for _ in range(lstm_cnt):
+        time_sequence_observation.append(observation)
+
+    # time_sequence_observation = np.array([time_sequence_observation])
+    for _ in range(initialize_param):
+        action = brain.predict(time_sequence_observation)
+        print(action)
+
+    while True:
+        if brain.training:
+            action = brain.predict(time_sequence_observation)  # try to keep around 40ms or less
+            print(action)
+
+        else:
+            brain.update_model()
+
+full_test_tf()
