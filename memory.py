@@ -17,7 +17,25 @@ class memory():
         self.memory["advantage"].append(advantage)
 
     def yield_minibatches(self, minibatch_size):
-        pass
+        batch_size = len(self.memory["eyes"])
+        start_index = 0
+        end_index = minibatch_size
+
+        while end_index < batch_size:
+            yield self.extract_unit(start_index, end_index)
+            start_index += minibatch_size
+            end_index += minibatch_size
+
+        yield self.extract_unit(start_index, batch_size)
+
+
+    def extract_unit(self, start_index, end_index):
+        unit = self.memory["eyes"][start_index:end_index], \
+               self.memory["ears"][start_index:end_index], \
+               self.memory["action"][start_index:end_index], \
+               self.memory["discounted_reward"][start_index:end_index], \
+               self.memory["advantage"][start_index:end_index]
+        return unit
 
     def clear(self):
         self.memory["eyes"] = []

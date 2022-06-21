@@ -88,7 +88,6 @@ class Brain():
         self.memory_being_filled.store_in_memory(unit)
 
         result = action.numpy()[0]
-        print(result)
         return result
 
     # PREVIOUS BATCH IS DONE TRAINING, TRAIN THE NEW BATCH:
