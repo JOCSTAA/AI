@@ -8,11 +8,12 @@ class memory():
         self.clear()
 
     def store_in_memory(self, unit):
-        eyes, ears, action, discounted_reward, advantage = unit
+        eyes, ears, action_sample, log_probs, discounted_reward, advantage = unit
 
         self.memory["eyes"].append(eyes)
         self.memory["ears"].append(ears)
-        self.memory["action"].append(advantage)
+        self.memory["action_sample"].append(action_sample)
+        self.memory["log_probs"].append(log_probs)
         self.memory["discounted_reward"].append(discounted_reward)
         self.memory["advantage"].append(advantage)
 
@@ -32,7 +33,8 @@ class memory():
     def extract_unit(self, start_index, end_index):
         unit = self.memory["eyes"][start_index:end_index], \
                self.memory["ears"][start_index:end_index], \
-               self.memory["action"][start_index:end_index], \
+               self.memory["action_sample"][start_index:end_index], \
+               self.memory["log_probs"][start_index:end_index], \
                self.memory["discounted_reward"][start_index:end_index], \
                self.memory["advantage"][start_index:end_index]
         return unit
@@ -40,7 +42,8 @@ class memory():
     def clear(self):
         self.memory["eyes"] = []
         self.memory["ears"] = []
-        self.memory["action"] = []
+        self.memory["action_sample"] = []
+        self.memory["log_probs"] = []
         self.memory["discounted_reward"] = []
         self.memory["advantage"] = []
 

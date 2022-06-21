@@ -5,6 +5,7 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/brain_tf.py" beforeDir="false" afterPath="$PROJECT_DIR$/brain_tf.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/memory.py" beforeDir="false" afterPath="$PROJECT_DIR$/memory.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model_tf.py" beforeDir="false" afterPath="$PROJECT_DIR$/model_tf.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -279,7 +280,14 @@
       <option name="project" value="LOCAL" />
       <updated>1655837026759</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="skeleton for tf: predict and train working with batch&#10;need to:&#10;add contineous action accurately&#10;do the training action accurately">
+      <created>1655837906986</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1655837906986</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -306,7 +314,8 @@
     <MESSAGE value="revert to single not batch" />
     <MESSAGE value="tensorflow" />
     <MESSAGE value="tensorflow working with predict" />
-    <option name="LAST_COMMIT_MESSAGE" value="tensorflow working with predict" />
+    <MESSAGE value="skeleton for tf: predict and train working with batch&#10;need to:&#10;add contineous action accurately&#10;do the training action accurately" />
+    <option name="LAST_COMMIT_MESSAGE" value="skeleton for tf: predict and train working with batch&#10;need to:&#10;add contineous action accurately&#10;do the training action accurately" />
   </component>
   <component name="WindowStateProjectService">
     <state x="734" y="355" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1655833152071">
@@ -324,11 +333,11 @@
       <screen x="2560" y="0" width="2560" height="1400" />
     </state>
     <state x="3570" y="447" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1653797183279" />
-    <state x="3494" y="294" key="CommitChangelistDialog2" timestamp="1655837900520">
+    <state x="3494" y="294" key="CommitChangelistDialog2" timestamp="1655837906590">
       <screen x="2560" y="0" width="2560" height="1400" />
     </state>
     <state x="934" y="294" key="CommitChangelistDialog2/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@0.0.2560.1400" timestamp="1655837026292" />
-    <state x="3494" y="294" key="CommitChangelistDialog2/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1655837900520" />
+    <state x="3494" y="294" key="CommitChangelistDialog2/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1655837906590" />
     <state x="1014" y="462" key="EnvironmentVariablesDialog" timestamp="1655833109946">
       <screen x="0" y="0" width="2560" height="1400" />
     </state>
@@ -338,29 +347,29 @@
     </state>
     <state x="1060" y="455" key="FileChooserDialogImpl/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@0.0.2560.1400" timestamp="1652574811500" />
     <state x="3620" y="455" key="FileChooserDialogImpl/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1655780804992" />
-    <state width="2539" height="437" key="GridCell.Tab.0.bottom" timestamp="1655837695804">
+    <state width="2539" height="746" key="GridCell.Tab.0.bottom" timestamp="1655849044471">
       <screen x="2560" y="0" width="2560" height="1400" />
     </state>
     <state width="2539" height="437" key="GridCell.Tab.0.bottom/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@0.0.2560.1400" timestamp="1655834829093" />
-    <state width="2539" height="437" key="GridCell.Tab.0.bottom/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1655837695804" />
+    <state width="2539" height="746" key="GridCell.Tab.0.bottom/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1655849044471" />
     <state width="2539" height="400" key="GridCell.Tab.0.bottom/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@5120.0.2560.1400" timestamp="1652586167702" />
-    <state width="2539" height="437" key="GridCell.Tab.0.center" timestamp="1655837695804">
+    <state width="2539" height="746" key="GridCell.Tab.0.center" timestamp="1655849044470">
       <screen x="2560" y="0" width="2560" height="1400" />
     </state>
     <state width="2539" height="437" key="GridCell.Tab.0.center/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@0.0.2560.1400" timestamp="1655834829092" />
-    <state width="2539" height="437" key="GridCell.Tab.0.center/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1655837695804" />
+    <state width="2539" height="746" key="GridCell.Tab.0.center/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1655849044470" />
     <state width="2539" height="400" key="GridCell.Tab.0.center/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@5120.0.2560.1400" timestamp="1652586167702" />
-    <state width="2539" height="437" key="GridCell.Tab.0.left" timestamp="1655837695804">
+    <state width="2539" height="746" key="GridCell.Tab.0.left" timestamp="1655849044470">
       <screen x="2560" y="0" width="2560" height="1400" />
     </state>
     <state width="2539" height="437" key="GridCell.Tab.0.left/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@0.0.2560.1400" timestamp="1655834829092" />
-    <state width="2539" height="437" key="GridCell.Tab.0.left/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1655837695804" />
+    <state width="2539" height="746" key="GridCell.Tab.0.left/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1655849044470" />
     <state width="2539" height="400" key="GridCell.Tab.0.left/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@5120.0.2560.1400" timestamp="1652586167702" />
-    <state width="2539" height="437" key="GridCell.Tab.0.right" timestamp="1655837695804">
+    <state width="2539" height="746" key="GridCell.Tab.0.right" timestamp="1655849044471">
       <screen x="2560" y="0" width="2560" height="1400" />
     </state>
     <state width="2539" height="437" key="GridCell.Tab.0.right/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@0.0.2560.1400" timestamp="1655834829092" />
-    <state width="2539" height="437" key="GridCell.Tab.0.right/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1655837695804" />
+    <state width="2539" height="746" key="GridCell.Tab.0.right/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1655849044471" />
     <state width="2539" height="400" key="GridCell.Tab.0.right/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@5120.0.2560.1400" timestamp="1652586167702" />
     <state width="2539" height="492" key="GridCell.Tab.1.bottom" timestamp="1653328471417">
       <screen x="2560" y="0" width="2560" height="1400" />
@@ -382,10 +391,10 @@
       <screen x="2560" y="0" width="2560" height="1400" />
     </state>
     <state x="3690" y="411" key="RollbackChangesDialog/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1655744796856" />
-    <state x="3341" y="342" key="SettingsEditor" timestamp="1655831721631">
+    <state x="3341" y="342" key="SettingsEditor" timestamp="1655846990002">
       <screen x="2560" y="0" width="2560" height="1400" />
     </state>
-    <state x="3341" y="342" key="SettingsEditor/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1655831721631" />
+    <state x="3341" y="342" key="SettingsEditor/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1655846990002" />
     <state x="5901" y="342" key="SettingsEditor/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@5120.0.2560.1400" timestamp="1652585135848" />
     <state width="498" height="446" key="SwitcherDM" timestamp="1655657607567">
       <screen x="2560" y="0" width="2560" height="1400" />

@@ -6,7 +6,6 @@ import numpy as np
 import tensorflow as tf
 import tensorflow.keras as keras
 from tensorflow.keras.optimizers import Adam
-import tensorflow_probability as tfp
 import copy
 from threading import Thread
 
@@ -43,16 +42,18 @@ class Brain():
     def train_model(self):
         for _ in range(self.epoch):
             for unit in self.memory_being_trained.yield_minibatches(self.minibatch_size):
-                eyes, ears, action, discounted_reward, advantage = unit
+                eyes, ears, action_sample, old_log_probs, discounted_reward, advantages = unit
                 state = (eyes, ears)
-                with tf.GradientTape(persistent=True) as tape:
-                    new_action, value, _, _ = self.model_in_training(state)
+                with tf.GradientTape() as tape:
+                    value, dist_new = self.model_in_training(state)
 
-                    ratio = tf.math.exp(new_action - action)
+                    new_log_probs = dist_new.log_prob(action_sample)
 
-                    surrogate1 = ratio * advantage
+                    ratio = tf.math.exp(new_log_probs - old_log_probs)
+
+                    surrogate1 = ratio * advantages
                     surrogate2 = tf.clip_by_value(ratio, 1 - self.loss_clip_parameter,
-                                                  1 + self.loss_clip_parameter) * advantage
+                                                  1 + self.loss_clip_parameter) * advantages
 
                     actor_loss = -tf.math.minimum(surrogate1, surrogate2)
                     actor_loss = tf.math.reduce_mean(actor_loss)
@@ -78,27 +79,28 @@ class Brain():
         eyes = observation[0]
         ears = observation[1]
         state = (np.array([eyes]), np.array([ears]))
-        action, value, _, _ = self.current_model(state)
+        value, dist = self.current_model(state)
+
+        action_sample = dist.sample()
+        log_probs = dist.log_prob(action_sample)
 
         # discounted_reward = compute_reward() # HAHA DEAL WITH THIS SHIII BOYYYYYYYY!
         discounted_reward = 1
         advantage = discounted_reward - value
 
-        unit = [eyes, ears, action, discounted_reward, advantage]
+        unit = [eyes, ears, action_sample, log_probs, discounted_reward, advantage]
         self.memory_being_filled.store_in_memory(unit)
 
-        result = action.numpy()[0]
+        result = action_sample.numpy()[0]
         return result
 
     # PREVIOUS BATCH IS DONE TRAINING, TRAIN THE NEW BATCH:
     # UPDATE THE MODEL FIRST THOUGH
     # SO THAT THE CURRENT MODEL BEING USED TO PREDICT IS THE LATEST COPY
     def update_model(self):
-        self.current_model = copy.deepcopy(self.model_in_training)
+        self.current_model = tf.keras.models.clone_model(self.model_in_training)
         self.memory_being_trained.memory = self.memory_being_filled.copy()
-
         self.training = True  # Initiates next training thread
-
         self.memory_being_filled.clear()
 
     # TERMINATES LEARNING PROCESS
