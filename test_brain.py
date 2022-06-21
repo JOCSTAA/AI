@@ -67,18 +67,20 @@ def full_test_tf():
 
     initialize_param = lstm_cnt
 
-    time_sequence_observation = []
+    eyes_time_sequence_observation = []
+    ears_time_sequence_observation = []
     for _ in range(lstm_cnt):
-        time_sequence_observation.append(observation)
+        eyes_time_sequence_observation.append(observation[0])
+        ears_time_sequence_observation.append(observation[1])
 
-    # time_sequence_observation = np.array([time_sequence_observation])
+    input_to_predict = (np.array(eyes_time_sequence_observation), np.array(ears_time_sequence_observation))
     for _ in range(initialize_param):
-        action = brain.predict(time_sequence_observation)
+        action = brain.predict(input_to_predict)
         print(action)
 
     while True:
         if brain.training:
-            action = brain.predict(time_sequence_observation)  # try to keep around 40ms or less
+            action = brain.predict(input_to_predict)  # try to keep around 40ms or less
             print(action)
 
         else:

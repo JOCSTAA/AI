@@ -1,6 +1,7 @@
 import random
 from model_tf import LAV
 
+from memory import memory
 import numpy as np
 import tensorflow as tf
 import tensorflow.keras as keras
@@ -9,6 +10,8 @@ import tensorflow_probability as tfp
 import copy
 from threading import Thread
 
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
 class Brain():
     def __init__(self,
@@ -20,15 +23,16 @@ class Brain():
                  epoch=5):
         self.epoch = epoch
         self.action_space = action_space
-        self.batch_being_filled = []
-        self.batch_being_trained = []
+        self.memory_being_filled = memory()
+        self.memory_being_trained = memory()
         self.training = False
         self.alive = True
-        # self.thread = Thread(target=self.train_thread)
-        # self.thread.start()
+        self.thread = Thread(target=self.train_thread)
+        self.thread.start()
         self.loss_clip_parameter = 0.2
         self.entropy_coefficient = 0.001
         self.value_coefficient = 0.5
+        self.minibatch_size = 32
 
         # self.model_in_training = LAV(6, 2, 6).to(device)
         self.model_in_training = LAV(eyes_input_shape, ears_input_shape, action_space)
@@ -37,12 +41,12 @@ class Brain():
 
     # PPO LOSS FUNCTION
     def train_model(self):
-        random.shuffle(self.batch_being_trained)
         for _ in range(self.epoch):
-            for unit in self.batch_being_trained:
+            for unit in self.memory_being_trained.yield_minibatches(self.minibatch_size):
+                eyes, ears, action, discounted_reward, advantage = unit
+                state = (eyes, ears)
                 with tf.GradientTape(persistent=True) as tape:
-                    state, action, discounted_reward, advantage = unit
-                    new_action, value = self.model_in_training(state)
+                    new_action, value, _, _ = self.model_in_training(state)
 
                     ratio = tf.math.exp(new_action - action)
 
@@ -71,16 +75,20 @@ class Brain():
     # USE THE CURRENT MODEL TO PREDICT THE REAL TIME STATES
     # TRY TO KEEP THIS TIME OPTIMIZED, THIS IS DONE IN REAL TIME
     def predict(self, observation):
-        action, value = self.current_model([observation])
+        eyes = observation[0]
+        ears = observation[1]
+        state = (np.array([eyes]), np.array([ears]))
+        action, value, _, _ = self.current_model(state)
 
         # discounted_reward = compute_reward() # HAHA DEAL WITH THIS SHIII BOYYYYYYYY!
         discounted_reward = 1
         advantage = discounted_reward - value
 
-        unit = [observation, action, discounted_reward, advantage]
-        self.batch_being_filled.append(unit)
-        print(action)
-        result = action.numpy()
+        unit = [eyes, ears, action, discounted_reward, advantage]
+        self.memory_being_filled.store_in_memory(unit)
+
+        result = action.numpy()[0]
+        print(result)
         return result
 
     # PREVIOUS BATCH IS DONE TRAINING, TRAIN THE NEW BATCH:
@@ -88,11 +96,11 @@ class Brain():
     # SO THAT THE CURRENT MODEL BEING USED TO PREDICT IS THE LATEST COPY
     def update_model(self):
         self.current_model = copy.deepcopy(self.model_in_training)
+        self.memory_being_trained.memory = self.memory_being_filled.copy()
 
-        self.batch_being_trained = self.batch_being_filled.copy()
         self.training = True  # Initiates next training thread
 
-        self.batch_being_filled = []
+        self.memory_being_filled.clear()
 
     # TERMINATES LEARNING PROCESS
     def kill_brain(self):

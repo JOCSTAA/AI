@@ -57,34 +57,25 @@ class LAV(keras.Model):
         # OUTPUT
         self.actor_output = layers.Dense(action_space, activation='tanh')
 
-        self.actor_mean = layers
-        
-
+        self.actor_mean = layers.Dense(action_space, activation='tanh')
+        self.actor_log_std = layers.Dense(action_space, activation='tanh')
         
         self.value_output = layers.Dense(1)
 
-    def call(self, observation_lstm_batch):
-        eyes_lstm_batch = []
-        ears_lstm_batch = []
-        for lstm in observation_lstm_batch:
-            eyes_batch_in_single_lstm = []
-            ears_batch_in_single_lstm = []
-            for observation in lstm:
-                eyes_batch_in_single_lstm.append(observation[0])
-                ears_batch_in_single_lstm.append(observation[1])
-
-            eyes_lstm_batch.append(eyes_batch_in_single_lstm)
-            ears_lstm_batch.append(ears_batch_in_single_lstm)
-
-        eye_input = np.array(eyes_lstm_batch, dtype=np.float32)
-        ear_input = np.array(ears_lstm_batch, dtype=np.float32)
+    def __call__(self, observation):
+        eye_input = np.array(observation[0], dtype = np.float32)
+        ear_input = np.array(observation[1], dtype = np.float32)
+        print(eye_input.shape, ear_input.shape)
 
         actor_eye_conv, actor_ear_conv = self.actor_eye_conv(eye_input), self.actor_ear_conv(ear_input)
         actor_merged = layers.concatenate((actor_eye_conv, actor_ear_conv))
         actor_lstm1 = self.actor_lstm1(actor_merged)
         actor_lstm2 = self.actor_lstm2(actor_lstm1)
         actor_dense = self.actor_dense(actor_lstm2)
-        actor_output = self.actor_dense(actor_dense)
+
+        actor_output = self.actor_output(actor_dense)
+        mean = self.actor_mean(actor_dense)
+        log_std = self.actor_log_std(actor_dense)
 
         value_eye_conv, value_ear_conv = self.value_eye_conv(eye_input), self.value_ear_conv(ear_input)
         value_merged = layers.concatenate((value_eye_conv, value_ear_conv))
@@ -93,4 +84,4 @@ class LAV(keras.Model):
         value_dense = self.value_dense(value_lstm2)
         value_output = self.value_output(value_dense)
 
-        return actor_output, value_output
+        return actor_output, value_output, mean, log_std
