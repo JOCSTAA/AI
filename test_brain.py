@@ -47,12 +47,11 @@ def full_test():
         print(action)
 
     while True:
-        if brain.training:
-            action = brain.predict(time_sequence_observation)  # try to keep around 40ms or less
-            print(action)
+        print("new_loop")
+        action = brain.predict(time_sequence_observation)  # try to keep around 40ms or less
+        print(action)
 
-        else:
-            brain.update_model()
+        brain.update_model()
 
 
 def full_test_tf():
@@ -79,11 +78,10 @@ def full_test_tf():
         print(action)
 
     while True:
-        if brain.training:
-            action = brain.predict(input_to_predict)  # try to keep around 40ms or less
-            print(action)
+        print("new_loop")
+        action = brain.predict(input_to_predict)  # try to keep around 40ms or less
+        print(action)
 
-        else:
-            brain.update_model()
+        brain.update_model()
 
 full_test_tf()

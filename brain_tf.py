@@ -10,7 +10,9 @@ import copy
 from threading import Thread
 
 import os
+
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+
 
 class Brain():
     def __init__(self,
@@ -22,25 +24,30 @@ class Brain():
                  epoch=5):
         self.epoch = epoch
         self.action_space = action_space
+        self.eyes_input_shape = eyes_input_shape
+        self.ears_input_shape = ears_input_shape
+        self.lstm_timestep = lstm_timestep
         self.memory_being_filled = memory()
         self.memory_being_trained = memory()
         self.training = False
         self.alive = True
-        self.thread = Thread(target=self.train_thread)
-        self.thread.start()
+        # self.thread = Thread(target=self.train_thread)
+        # self.thread.start()
         self.loss_clip_parameter = 0.2
         self.entropy_coefficient = 0.001
         self.value_coefficient = 0.5
         self.minibatch_size = 32
 
-        # self.model_in_training = LAV(6, 2, 6).to(device)
         self.model_in_training = LAV(eyes_input_shape, ears_input_shape, action_space)
-        self.current_model = copy.deepcopy(self.model_in_training)
         self.model_in_training.compile(optimizer=Adam(learning_rate=learning_rate))
+        self.initialize_model()
+        self.current_model = LAV(eyes_input_shape, ears_input_shape, action_space)
 
     # PPO LOSS FUNCTION
     def train_model(self):
+        print("new_training")
         for _ in range(self.epoch):
+            print("new_epoch")
             for unit in self.memory_being_trained.yield_minibatches(self.minibatch_size):
                 eyes, ears, action_sample, old_log_probs, discounted_reward, advantages = unit
                 state = (eyes, ears)
@@ -98,12 +105,35 @@ class Brain():
     # UPDATE THE MODEL FIRST THOUGH
     # SO THAT THE CURRENT MODEL BEING USED TO PREDICT IS THE LATEST COPY
     def update_model(self):
-        self.current_model = tf.keras.models.clone_model(self.model_in_training)
+        self.copy_model()
         self.memory_being_trained.memory = self.memory_being_filled.copy()
         self.training = True  # Initiates next training thread
+
+        self.train_model()
+        self.training = False
+
         self.memory_being_filled.clear()
+        print("cleard memory")
 
     # TERMINATES LEARNING PROCESS
     def kill_brain(self):
         self.alive = False
         self.thread.join()
+
+    # APPLIES LEARNT MODEL ATTRIBUTES TO CURRENT MODEL
+    def copy_model(self):
+        self.current_model.set_weights(self.model_in_training.get_weights())
+
+    # INITIALIZES MODEL SO THAT MODEL ATTRIBUTES CAN BE COPIED
+    def initialize_model(self):
+        random_eye_array = np.random.randint(low=0, high=255, size=self.eyes_input_shape)
+        random_ear_array = np.random.randint(low=0, high=255, size=self.ears_input_shape)
+
+        eyes_time_sequence_observation = []
+        ears_time_sequence_observation = []
+        for _ in range(self.lstm_timestep):
+            eyes_time_sequence_observation.append(random_eye_array)
+            ears_time_sequence_observation.append(random_ear_array)
+
+        model_input = (np.array([eyes_time_sequence_observation]), np.array([ears_time_sequence_observation]))
+        self.model_in_training(model_input)

@@ -21,6 +21,7 @@ class memory():
         batch_size = len(self.memory["eyes"])
         start_index = 0
         end_index = minibatch_size
+        print("in yield: batch size = ", batch_size)
 
         while end_index < batch_size:
             yield self.extract_unit(start_index, end_index)
@@ -37,6 +38,8 @@ class memory():
                self.memory["log_probs"][start_index:end_index], \
                self.memory["discounted_reward"][start_index:end_index], \
                self.memory["advantage"][start_index:end_index]
+
+        print("in unit : len of eyes array = " ,len(self.memory["eyes"][start_index:end_index]))
         return unit
 
     def clear(self):
