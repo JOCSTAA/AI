@@ -19,6 +19,7 @@ class Speak():
     def talk(self):
         self.stream = self.p.open(format=pyaudio.paFloat32,
                                   channels=1,
+                                  input= False,
                                   rate=self.sample_rate,
                                   frames_per_buffer=self.number_of_samples_per_frame,
                                   output=True)

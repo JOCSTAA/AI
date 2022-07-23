@@ -6,6 +6,7 @@ import numpy as np
 import tensorflow as tf
 import tensorflow.keras as keras
 from tensorflow.keras.optimizers import Adam
+import time
 import copy
 from threading import Thread
 
@@ -21,6 +22,7 @@ class Brain():
                  lstm_timestep=10,
                  learning_rate=0.003,
                  action_space=10,
+                 threading = True,
                  epoch=5):
         self.epoch = epoch
         self.action_space = action_space
@@ -31,8 +33,10 @@ class Brain():
         self.memory_being_trained = memory()
         self.training = False
         self.alive = True
-        # self.thread = Thread(target=self.train_thread)
-        # self.thread.start()
+        self.threading = threading
+        if threading:
+            self.thread = Thread(target=self.train_thread)
+            self.thread.start()
         self.loss_clip_parameter = 0.2
         self.entropy_coefficient = 0.001
         self.value_coefficient = 0.5
@@ -45,9 +49,7 @@ class Brain():
 
     # PPO LOSS FUNCTION
     def train_model(self):
-        print("new_training")
         for _ in range(self.epoch):
-            print("new_epoch")
             for unit in self.memory_being_trained.yield_minibatches(self.minibatch_size):
                 eyes, ears, action_sample, old_log_probs, discounted_reward, advantages = unit
                 state = (eyes, ears)
@@ -76,7 +78,6 @@ class Brain():
     def train_thread(self):
         while self.alive:
             if self.training:
-                print("new_training")
                 self.train_model()
                 self.training = False
 
@@ -109,11 +110,11 @@ class Brain():
         self.memory_being_trained.memory = self.memory_being_filled.copy()
         self.training = True  # Initiates next training thread
 
-        self.train_model()
-        self.training = False
+        if not self.threading:
+            self.train_model()
+            self.training = False
 
         self.memory_being_filled.clear()
-        print("cleard memory")
 
     # TERMINATES LEARNING PROCESS
     def kill_brain(self):

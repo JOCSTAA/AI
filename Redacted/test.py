@@ -7,12 +7,13 @@ import Speak
 from threading import Thread
 
 eyes = cv2.VideoCapture(0)
-eyes.set(3, 256)
-eyes.set(4, 256)
 ears = Hear.Hear()
 mouth = Speak.Speak()
 
 mouth.start_speaking()
+mouth.write(np.array([0, 0]))
+timer = time.time()
+x = 0
 ears.start_listening()
 ret = True
 total, cnt = 0, 0
@@ -24,7 +25,11 @@ while True:
     # image = cv2.resize(image, (256, 256))
     audio = ears.read()
     print(image.shape, audio.shape)
-    mouth.write(np.array([0.5,0.5]))
+    mouth.write(np.array([x, 1]))
+    if time.time() - timer > 2:
+        timer = time.time()
+        x += 0.1
+        if x > 1: x = x - 1
 
     end = time.time()
 

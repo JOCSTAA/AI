@@ -2,11 +2,28 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="7f2c407e-8cea-4d15-99d8-048b313a1319" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/Integration test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/AI.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/AI.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Hear.py" beforeDir="false" afterPath="$PROJECT_DIR$/Hear.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Images/saved_image_0.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Images/saved_image_1.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Images/saved_image_2.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Images/saved_image_3.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Input.py" beforeDir="false" afterPath="$PROJECT_DIR$/Input.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Output.py" beforeDir="false" afterPath="$PROJECT_DIR$/Output.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Speak.py" beforeDir="false" afterPath="$PROJECT_DIR$/Speak.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Temp/MFCCs.png" beforeDir="false" afterPath="$PROJECT_DIR$/Temp/MFCCs.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/brain_tf.py" beforeDir="false" afterPath="$PROJECT_DIR$/brain_tf.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/memory.py" beforeDir="false" afterPath="$PROJECT_DIR$/memory.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/model_tf.py" beforeDir="false" afterPath="$PROJECT_DIR$/model_tf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/redacted.py" beforeDir="false" afterPath="$PROJECT_DIR$/Redacted/redacted.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scratch.py" beforeDir="false" afterPath="$PROJECT_DIR$/Redacted/scratch.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_audio.py" beforeDir="false" afterPath="$PROJECT_DIR$/test_audio.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test_brain.py" beforeDir="false" afterPath="$PROJECT_DIR$/test_brain.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_speak.py" beforeDir="false" afterPath="$PROJECT_DIR$/test_speak.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -33,7 +50,7 @@
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/Brain.py" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
@@ -41,7 +58,28 @@
       <recent name="C:\Users\josho\Desktop\AI\Redacted" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.test_brain">
+  <component name="RunManager" selected="Python.Integration test">
+    <configuration name="AI" type="PythonConfigurationType" factoryName="Python">
+      <module name="AI" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="C:\Users\josho\anaconda3\envs\gym\python.exe" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Brain.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="Audio" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="AI" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -63,7 +101,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="Brain" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="Integration test" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="AI" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -75,28 +113,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="C:\Users\josho\Desktop\AI\Brain.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="scratch" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="AI" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scratch.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Integration test.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -117,7 +134,28 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test.py" />
+      <option name="SCRIPT_NAME" value="C:\Users\josho\Desktop\AI\Redacted\test.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="test_audio" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="AI" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test_audio.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -170,19 +208,20 @@
     </configuration>
     <list>
       <item itemvalue="Python.Audio" />
-      <item itemvalue="Python.Brain" />
-      <item itemvalue="Python.scratch" />
+      <item itemvalue="Python.AI" />
       <item itemvalue="Python.test" />
       <item itemvalue="Python.test_brain" />
+      <item itemvalue="Python.Integration test" />
       <item itemvalue="Python.test_speak" />
+      <item itemvalue="Python.test_audio" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.test_brain" />
+        <item itemvalue="Python.Integration test" />
+        <item itemvalue="Python.test_audio" />
         <item itemvalue="Python.test" />
-        <item itemvalue="Python.scratch" />
-        <item itemvalue="Python.Brain" />
         <item itemvalue="Python.test_speak" />
+        <item itemvalue="Python.test_brain" />
       </list>
     </recent_temporary>
   </component>
@@ -295,7 +334,14 @@
       <option name="project" value="LOCAL" />
       <updated>1655849105853</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="without thread: works perfectly&#10;fix threading">
+      <created>1655854936691</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1655854936691</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -324,14 +370,15 @@
     <MESSAGE value="tensorflow working with predict" />
     <MESSAGE value="skeleton for tf: predict and train working with batch&#10;need to:&#10;add contineous action accurately&#10;do the training action accurately" />
     <MESSAGE value="working ppo with tensor flow&#10;train and predict working as it should (i think?)&#10;need to clean up and optimize!" />
-    <option name="LAST_COMMIT_MESSAGE" value="working ppo with tensor flow&#10;train and predict working as it should (i think?)&#10;need to clean up and optimize!" />
+    <MESSAGE value="without thread: works perfectly&#10;fix threading" />
+    <option name="LAST_COMMIT_MESSAGE" value="without thread: works perfectly&#10;fix threading" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="734" y="355" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1655833152071">
-      <screen x="0" y="0" width="2560" height="1400" />
+    <state x="3294" y="355" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1655862330800">
+      <screen x="2560" y="0" width="2560" height="1400" />
     </state>
     <state x="734" y="355" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@0.0.2560.1400" timestamp="1655833152071" />
-    <state x="3294" y="355" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1655830092180" />
+    <state x="3294" y="355" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1655862330800" />
     <state x="5854" y="355" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@5120.0.2560.1400" timestamp="1652585103678" />
     <state x="3601" y="503" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1653235967955">
       <screen x="2560" y="0" width="2560" height="1400" />
@@ -342,85 +389,85 @@
       <screen x="2560" y="0" width="2560" height="1400" />
     </state>
     <state x="3570" y="447" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1653797183279" />
-    <state x="3494" y="294" key="CommitChangelistDialog2" timestamp="1655849105337">
+    <state x="3494" y="294" key="CommitChangelistDialog2" timestamp="1655854934656">
       <screen x="2560" y="0" width="2560" height="1400" />
     </state>
     <state x="934" y="294" key="CommitChangelistDialog2/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@0.0.2560.1400" timestamp="1655837026292" />
-    <state x="3494" y="294" key="CommitChangelistDialog2/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1655849105337" />
+    <state x="3494" y="294" key="CommitChangelistDialog2/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1655854934656" />
     <state x="1014" y="462" key="EnvironmentVariablesDialog" timestamp="1655833109946">
       <screen x="0" y="0" width="2560" height="1400" />
     </state>
     <state x="1014" y="462" key="EnvironmentVariablesDialog/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@0.0.2560.1400" timestamp="1655833109946" />
-    <state x="3620" y="455" key="FileChooserDialogImpl" timestamp="1655780804992">
+    <state x="3620" y="455" key="FileChooserDialogImpl" timestamp="1657478605271">
       <screen x="2560" y="0" width="2560" height="1400" />
     </state>
     <state x="1060" y="455" key="FileChooserDialogImpl/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@0.0.2560.1400" timestamp="1652574811500" />
-    <state x="3620" y="455" key="FileChooserDialogImpl/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1655780804992" />
-    <state width="2539" height="583" key="GridCell.Tab.0.bottom" timestamp="1655854847997">
+    <state x="3620" y="455" key="FileChooserDialogImpl/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1657478605271" />
+    <state width="2539" height="544" key="GridCell.Tab.0.bottom" timestamp="1658603758509">
       <screen x="2560" y="0" width="2560" height="1400" />
     </state>
     <state width="2539" height="437" key="GridCell.Tab.0.bottom/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@0.0.2560.1400" timestamp="1655834829093" />
-    <state width="2539" height="583" key="GridCell.Tab.0.bottom/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1655854847997" />
+    <state width="2539" height="544" key="GridCell.Tab.0.bottom/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1658603758509" />
     <state width="2539" height="400" key="GridCell.Tab.0.bottom/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@5120.0.2560.1400" timestamp="1652586167702" />
-    <state width="2539" height="583" key="GridCell.Tab.0.center" timestamp="1655854847996">
+    <state width="2539" height="544" key="GridCell.Tab.0.center" timestamp="1658603758509">
       <screen x="2560" y="0" width="2560" height="1400" />
     </state>
     <state width="2539" height="437" key="GridCell.Tab.0.center/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@0.0.2560.1400" timestamp="1655834829092" />
-    <state width="2539" height="583" key="GridCell.Tab.0.center/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1655854847996" />
+    <state width="2539" height="544" key="GridCell.Tab.0.center/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1658603758509" />
     <state width="2539" height="400" key="GridCell.Tab.0.center/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@5120.0.2560.1400" timestamp="1652586167702" />
-    <state width="2539" height="583" key="GridCell.Tab.0.left" timestamp="1655854847996">
+    <state width="2539" height="544" key="GridCell.Tab.0.left" timestamp="1658603758509">
       <screen x="2560" y="0" width="2560" height="1400" />
     </state>
     <state width="2539" height="437" key="GridCell.Tab.0.left/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@0.0.2560.1400" timestamp="1655834829092" />
-    <state width="2539" height="583" key="GridCell.Tab.0.left/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1655854847996" />
+    <state width="2539" height="544" key="GridCell.Tab.0.left/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1658603758509" />
     <state width="2539" height="400" key="GridCell.Tab.0.left/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@5120.0.2560.1400" timestamp="1652586167702" />
-    <state width="2539" height="583" key="GridCell.Tab.0.right" timestamp="1655854847997">
+    <state width="2539" height="544" key="GridCell.Tab.0.right" timestamp="1658603758509">
       <screen x="2560" y="0" width="2560" height="1400" />
     </state>
     <state width="2539" height="437" key="GridCell.Tab.0.right/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@0.0.2560.1400" timestamp="1655834829092" />
-    <state width="2539" height="583" key="GridCell.Tab.0.right/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1655854847997" />
+    <state width="2539" height="544" key="GridCell.Tab.0.right/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1658603758509" />
     <state width="2539" height="400" key="GridCell.Tab.0.right/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@5120.0.2560.1400" timestamp="1652586167702" />
-    <state width="2539" height="492" key="GridCell.Tab.1.bottom" timestamp="1653328471417">
+    <state width="2539" height="492" key="GridCell.Tab.1.bottom" timestamp="1655862304470">
       <screen x="2560" y="0" width="2560" height="1400" />
     </state>
-    <state width="2539" height="492" key="GridCell.Tab.1.bottom/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1653328471417" />
-    <state width="2539" height="492" key="GridCell.Tab.1.center" timestamp="1653328471417">
+    <state width="2539" height="492" key="GridCell.Tab.1.bottom/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1655862304470" />
+    <state width="2539" height="492" key="GridCell.Tab.1.center" timestamp="1655862304470">
       <screen x="2560" y="0" width="2560" height="1400" />
     </state>
-    <state width="2539" height="492" key="GridCell.Tab.1.center/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1653328471417" />
-    <state width="2539" height="492" key="GridCell.Tab.1.left" timestamp="1653328471417">
+    <state width="2539" height="492" key="GridCell.Tab.1.center/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1655862304470" />
+    <state width="2539" height="492" key="GridCell.Tab.1.left" timestamp="1655862304470">
       <screen x="2560" y="0" width="2560" height="1400" />
     </state>
-    <state width="2539" height="492" key="GridCell.Tab.1.left/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1653328471417" />
-    <state width="2539" height="492" key="GridCell.Tab.1.right" timestamp="1653328471417">
+    <state width="2539" height="492" key="GridCell.Tab.1.left/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1655862304470" />
+    <state width="2539" height="492" key="GridCell.Tab.1.right" timestamp="1655862304470">
       <screen x="2560" y="0" width="2560" height="1400" />
     </state>
-    <state width="2539" height="492" key="GridCell.Tab.1.right/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1653328471417" />
+    <state width="2539" height="492" key="GridCell.Tab.1.right/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1655862304470" />
     <state x="3690" y="411" key="RollbackChangesDialog" timestamp="1655744796856">
       <screen x="2560" y="0" width="2560" height="1400" />
     </state>
     <state x="3690" y="411" key="RollbackChangesDialog/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1655744796856" />
-    <state x="3341" y="342" key="SettingsEditor" timestamp="1655846990002">
+    <state x="3341" y="342" key="SettingsEditor" timestamp="1655863917202">
       <screen x="2560" y="0" width="2560" height="1400" />
     </state>
-    <state x="3341" y="342" key="SettingsEditor/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1655846990002" />
+    <state x="3341" y="342" key="SettingsEditor/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1655863917202" />
     <state x="5901" y="342" key="SettingsEditor/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@5120.0.2560.1400" timestamp="1652585135848" />
     <state width="498" height="446" key="SwitcherDM" timestamp="1655657607567">
       <screen x="2560" y="0" width="2560" height="1400" />
     </state>
     <state width="498" height="446" key="SwitcherDM/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1655657607567" />
-    <state x="3536" y="527" width="607" height="349" key="com.intellij.ide.util.TipDialog" timestamp="1655828290756">
+    <state x="3536" y="527" width="607" height="349" key="com.intellij.ide.util.TipDialog" timestamp="1658602752933">
       <screen x="2560" y="0" width="2560" height="1400" />
     </state>
     <state x="976" y="524" key="com.intellij.ide.util.TipDialog/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@0.0.2560.1400" timestamp="1652570733029" />
-    <state x="3536" y="527" width="607" height="349" key="com.intellij.ide.util.TipDialog/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1655828290756" />
+    <state x="3536" y="527" width="607" height="349" key="com.intellij.ide.util.TipDialog/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1658602752933" />
     <state x="3581" y="343" key="refactoring.ChangeSignatureDialog" timestamp="1655761406121">
       <screen x="2560" y="0" width="2560" height="1400" />
     </state>
     <state x="3581" y="343" key="refactoring.ChangeSignatureDialog/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1655761406121" />
-    <state x="3503" y="315" width="672" height="678" key="search.everywhere.popup" timestamp="1655829222021">
+    <state x="3503" y="315" width="672" height="678" key="search.everywhere.popup" timestamp="1657478993554">
       <screen x="2560" y="0" width="2560" height="1400" />
     </state>
-    <state x="3503" y="315" width="672" height="678" key="search.everywhere.popup/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1655829222021" />
+    <state x="3503" y="315" width="672" height="678" key="search.everywhere.popup/0.0.2560.1400/2560.0.2560.1400/5120.0.2560.1400@2560.0.2560.1400" timestamp="1657478993554" />
   </component>
 </project>

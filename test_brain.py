@@ -58,7 +58,7 @@ def full_test_tf():
     lstm_cnt = 3
 
     eye_shape, ear_shape = (256, 256, 3), (20, 17)
-    brain = brain_tf.Brain(lstm_timestep=lstm_cnt, eyes_input_shape=eye_shape, ears_input_shape= ear_shape)
+    brain = brain_tf.Brain(lstm_timestep=lstm_cnt, eyes_input_shape=eye_shape, ears_input_shape= ear_shape, threading=False)
 
     random_eye_array = np.random.randint(low=0, high=255, size=eye_shape)
     random_ear_array = np.random.randint(low=0, high=255, size=ear_shape)
@@ -77,11 +77,21 @@ def full_test_tf():
         action = brain.predict(input_to_predict)
         print(action)
 
+    # while True:
+    #     if brain.training:
+    #         action = brain.predict(input_to_predict)  # try to keep around 40ms or less
+    #         print(action)
+    #
+    #     else:
+    #         brain.update_model()
+
+    ## without threading
     while True:
-        print("new_loop")
+        # print("new_loop")
         action = brain.predict(input_to_predict)  # try to keep around 40ms or less
         print(action)
 
         brain.update_model()
+
 
 full_test_tf()

@@ -18,10 +18,10 @@ class LAV(keras.Model):
         self.actor_eye_conv.add(layers.TimeDistributed(layers.Flatten()))
 
         self.actor_ear_conv = keras.Sequential()
-        self.actor_ear_conv.add(layers.TimeDistributed(layers.Conv1D(32, 3, activation="relu", padding="same")))
-        self.actor_ear_conv.add(layers.TimeDistributed(layers.MaxPooling1D(pool_size=2, padding="same")))
-        self.actor_ear_conv.add(layers.TimeDistributed(layers.Conv1D(64, 5, activation="relu", padding="same")))
-        self.actor_ear_conv.add(layers.TimeDistributed(layers.MaxPooling1D(pool_size=2, padding="same")))
+        self.actor_ear_conv.add(layers.TimeDistributed(layers.Conv2D(32, 3, activation="relu", padding="same")))
+        self.actor_ear_conv.add(layers.TimeDistributed(layers.MaxPooling2D(pool_size=2, padding="same")))
+        self.actor_ear_conv.add(layers.TimeDistributed(layers.Conv2D(64, 5, activation="relu", padding="same")))
+        self.actor_ear_conv.add(layers.TimeDistributed(layers.MaxPooling2D(pool_size=2, padding="same")))
         self.actor_ear_conv.add(layers.TimeDistributed(layers.Flatten()))
 
         self.value_eye_conv = keras.Sequential()
@@ -32,10 +32,10 @@ class LAV(keras.Model):
         self.value_eye_conv.add(layers.TimeDistributed(layers.Flatten()))
 
         self.value_ear_conv = keras.Sequential()
-        self.value_ear_conv.add(layers.TimeDistributed(layers.Conv1D(32, 3, activation="relu", padding="same")))
-        self.value_ear_conv.add(layers.TimeDistributed(layers.MaxPooling1D(pool_size=2, padding="same")))
-        self.value_ear_conv.add(layers.TimeDistributed(layers.Conv1D(64, 5, activation="relu", padding="same")))
-        self.value_ear_conv.add(layers.TimeDistributed(layers.MaxPooling1D(pool_size=2, padding="same")))
+        self.value_ear_conv.add(layers.TimeDistributed(layers.Conv2D(32, 3, activation="relu", padding="same")))
+        self.value_ear_conv.add(layers.TimeDistributed(layers.MaxPooling2D(pool_size=2, padding="same")))
+        self.value_ear_conv.add(layers.TimeDistributed(layers.Conv2D(64, 5, activation="relu", padding="same")))
+        self.value_ear_conv.add(layers.TimeDistributed(layers.MaxPooling2D(pool_size=2, padding="same")))
         self.value_ear_conv.add(layers.TimeDistributed(layers.Flatten()))
 
         # LSTM
@@ -67,7 +67,7 @@ class LAV(keras.Model):
     def __call__(self, observation):
         eye_input = np.array(observation[0], dtype=np.float32)
         ear_input = np.array(observation[1], dtype=np.float32)
-        print(eye_input.shape, ear_input.shape)
+        # print(eye_input.shape, ear_input.shape)
 
         value_eye_conv, value_ear_conv = self.value_eye_conv(eye_input), self.value_ear_conv(ear_input)
         value_merged = layers.concatenate((value_eye_conv, value_ear_conv))
