@@ -22,7 +22,6 @@ class Brain():
                  lstm_timestep=10,
                  learning_rate=0.003,
                  action_space=10,
-                 threading = True,
                  epoch=5):
         self.epoch = epoch
         self.action_space = action_space
@@ -31,12 +30,7 @@ class Brain():
         self.lstm_timestep = lstm_timestep
         self.memory_being_filled = memory()
         self.memory_being_trained = memory()
-        self.training = False
         self.alive = True
-        self.threading = threading
-        if threading:
-            self.thread = Thread(target=self.train_thread)
-            self.thread.start()
         self.loss_clip_parameter = 0.2
         self.entropy_coefficient = 0.001
         self.value_coefficient = 0.5
@@ -73,14 +67,6 @@ class Brain():
                 grads = tape.gradient(loss, params)
                 self.model_in_training.optimizer.apply_gradients(zip(grads, params))
 
-    # THIS FUNCTION IS THE ASYNCHRONOUS FUNCTION THAT WOULD KEEP RUNNING TILL LEARNING PROCESS IS TERMINATED
-    # IT INITIATES THE TRAINING OF THE NEW BATCH WHEN SELF.TRAINING IS TOGGLED FROM OFF TO ON
-    def train_thread(self):
-        while self.alive:
-            if self.training:
-                self.train_model()
-                self.training = False
-
     # USE THE CURRENT MODEL TO PREDICT THE REAL TIME STATES
     # TRY TO KEEP THIS TIME OPTIMIZED, THIS IS DONE IN REAL TIME
     def predict(self, observation):
@@ -108,11 +94,8 @@ class Brain():
     def update_model(self):
         self.copy_model()
         self.memory_being_trained.memory = self.memory_being_filled.copy()
-        self.training = True  # Initiates next training thread
 
-        if not self.threading:
-            self.train_model()
-            self.training = False
+        self.train_model()
 
         self.memory_being_filled.clear()
 
