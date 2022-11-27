@@ -19,7 +19,7 @@ output.act(action)
 # do this for ever
 while True:
     begin = time.time()
-    print("new training")
+    # print("new training")
     # start a new thread for each new training session
     training_thread = Thread(target=brain.update_model)
     training_thread.start()
@@ -32,4 +32,4 @@ while True:
     training_thread.join()
     end = time.time()
     duration = end - begin
-    print("time taken :", duration, " seconds")
+    # print("time taken :", duration, " seconds")

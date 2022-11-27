@@ -5,6 +5,7 @@
       <w>cuda</w>
       <w>lstm</w>
       <w>minibatch</w>
+      <w>probs</w>
       <w>timestep</w>
     </words>
   </dictionary>

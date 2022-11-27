@@ -1,16 +1,11 @@
-import random
-from model import LaWV
+from Models import Model
+from Memory import Memory
 
-import torch
-import torch.optim as optim
-import copy
-from threading import Thread
-
-use_cuda = torch.cuda.is_available()
-device = torch.device("cuda" if use_cuda else "cpu")
+import numpy as np
+import tensorflow as tf
 
 
-class Brain():
+class Brain:
     def __init__(self,
                  eyes_input_shape=(256, 256, 3),  # update to actual eye shape no resize
                  ears_input_shape=(20, 17),  # update to actual ear shape
@@ -20,88 +15,110 @@ class Brain():
                  epoch=5):
         self.epoch = epoch
         self.action_space = action_space
-        self.batch_being_filled = []
-        self.batch_being_trained = []
-        self.training = False
+        self.eyes_input_shape = eyes_input_shape
+        self.ears_input_shape = ears_input_shape
+        self.lstm_timestep = lstm_timestep
+        self.memory_being_filled = Memory(gamma=0.99)
+        self.memory_being_trained = Memory(gamma=0.99)
         self.alive = True
-        self.thread = Thread(target=self.train_thread)
-        self.thread.start()
         self.loss_clip_parameter = 0.2
         self.entropy_coefficient = 0.001
         self.value_coefficient = 0.5
+        self.minibatch_size = 512
+        self.learning_rate = learning_rate
+        self.epsilon = 1e-5
 
-        # self.model_in_training = LAV(6, 2, 6).to(device)
-        self.model_in_training = LaWV(eyes_input_shape, ears_input_shape, action_space, lstm_timestep=lstm_timestep).to(
-            device)
-        self.current_model = copy.deepcopy(self.model_in_training)
-        self.optimizer = optim.Adam(self.model_in_training.parameters(), lr=learning_rate)
+        self.model = Model()
 
-    # PPO LOSS FUNCTION
     def train_model(self):
-        random.shuffle(self.batch_being_trained)
+        """PPO LOSS FUNCTION"""
         for _ in range(self.epoch):
-            for unit in self.batch_being_trained:
-                state, action, old_log_probabilities, discounted_reward, advantage = unit
-                dist, value = self.model_in_training(state)
+            for unit in self.memory_being_trained.yield_minibatches(self.minibatch_size):
+                eyes, ears, action_sample, old_log_probs, advantages, value = unit
 
-                advantage = advantage.detach()
-                old_log_probabilities = old_log_probabilities.detach()
-                value = value.detach()
+                eyes = tf.convert_to_tensor(eyes)
+                ears = tf.convert_to_tensor(ears)
+                state = (eyes, ears)
+                action_sample = tf.convert_to_tensor(action_sample)
+                old_log_probs = tf.convert_to_tensor(old_log_probs)
+                advantages = tf.convert_to_tensor(advantages)
+                old_value = tf.convert_to_tensor(value)
+                model = self.model.model_in_training
+                actor, critic = model.actor, model.critic
 
-                entropy = dist.entropy().mean()
-                new_log_probabilities = dist.log_prob(action)
+                with tf.GradientTape(persistent=True) as tape:
+                    dist_new, value = actor(state), critic(state)
 
-                ratio = (new_log_probabilities - old_log_probabilities).exp()
-                surrogate1 = ratio * advantage
-                surrogate2 = torch.clamp(ratio, 1.0 - self.loss_clip_parameter,
-                                         1.0 + self.loss_clip_parameter) * advantage
+                    new_log_probs = dist_new.log_prob(action_sample)
 
-                actor_loss = - torch.min(surrogate1, surrogate2).mean()
-                value_loss = (discounted_reward - value).pow(2).mean()
+                    ratio = tf.math.exp(new_log_probs - old_log_probs)
 
-                loss = (self.value_coefficient * value_loss) + actor_loss - (self.entropy_coefficient * entropy)
+                    surrogate1 = ratio * advantages
+                    surrogate2 = tf.clip_by_value(ratio, 1 - self.loss_clip_parameter,
+                                                  1 + self.loss_clip_parameter) * advantages
 
-                self.optimizer.zero_grad()
-                loss.backward()
-                self.optimizer.step()
+                    actor_loss = -tf.math.minimum(surrogate1, surrogate2)
+                    actor_loss = tf.math.reduce_mean(actor_loss)
 
-    # THIS FUNCTION IS THE ASYNCHRONOUS FUNCTION THAT WOULD KEEP RUNNING TILL LEARNING PROCESS IS TERMINATED
-    # IT INITIATES THE TRAINING OF THE NEW BATCH WHEN SELF.TRAINING IS TOGGLED FROM OFF TO ON
-    def train_thread(self):
-        while self.alive:
-            if self.training:
-                print("new_training")
-                self.train_model()
-                self.training = False
+                    v_loss = tf.square(value-old_value)
 
-    # USE THE CURRENT MODEL TO PREDICT THE REAL TIME STATES
-    # TRY TO KEEP THIS TIME OPTIMIZED, THIS IS DONE IN REAL TIME
+                    critic_loss = 0.5 * tf.reduce_mean(v_loss)
+
+                    entropy = dist_new.entropy()
+                    entropy_loss = tf.reduce_mean(entropy)
+
+                actor_params = actor.trainable_variables
+                actor_grads = tape.gradient(actor_loss, actor_params)
+                actor.optimizer.apply_gradients(zip(actor_grads, actor_params))
+
+                critic_params = critic.trainable_variables
+                critic_grads = tape.gradient(critic_loss, critic_params)
+                critic.optimizer.apply_gradients(zip(critic_grads, critic_params))
+
+        # USE THE CURRENT MODEL TO PREDICT THE REAL TIME STATES
+        # TRY TO KEEP THIS TIME OPTIMIZED, THIS IS DONE IN REAL TIME
+
     def predict(self, observation):
-        dist, value = self.current_model(observation)
-        action = dist.sample()
-        log_prob = dist.log_prob(action)
+        """
+        USE THE CURRENT MODEL TO PREDICT THE REAL TIME STATES.
+
+        TRY TO KEEP THIS TIME OPTIMIZED, THIS IS DONE IN REAL TIME
+
+        :param observation:
+        :return: action
+        """
+        eyes = observation[0]
+        ears = observation[1]
+        state = (np.array([eyes]), np.array([ears]))
+        model = self.model.current_model
+        value, dist = model.critic(state), model.actor(state)
+
+        action_sample = dist.sample()
+        log_probs = dist.log_prob(action_sample)
 
         # discounted_reward = compute_reward() # HAHA DEAL WITH THIS SHIII BOYYYYYYYY!
         discounted_reward = 1
-        advantage = discounted_reward - value
 
-        unit = [observation, action, log_prob, discounted_reward, advantage]
-        self.batch_being_filled.append(unit)
-        result = action.cpu().detach().numpy()[0]
-        return result
+        unit = [eyes, ears, action_sample[0].numpy(), log_probs[0].numpy(), discounted_reward, value[0][0].numpy()]
+        self.memory_being_filled.store_in_memory(unit)
 
-    # PREVIOUS BATCH IS DONE TRAINING, TRAIN THE NEW BATCH:
-    # UPDATE THE MODEL FIRST THOUGH
-    # SO THAT THE CURRENT MODEL BEING USED TO PREDICT IS THE LATEST COPY
+        action = action_sample.numpy()[0]
+        return action
+
     def update_model(self):
-        self.current_model = copy.deepcopy(self.model_in_training)
+        """
+        PREVIOUS BATCH IS DONE TRAINING, TRAIN THE NEW BATCH:
+        UPDATE THE MODEL FIRST THOUGH
+        SO THAT THE CURRENT MODEL BEING USED TO PREDICT IS THE LATEST COPY
+        """
+        if len(self.memory_being_filled.memory["state"]) >= self.minibatch_size:  # do by batch
+            # if self.memory_being_filled.memory["state"]:
+            self.model.update_model()
+            print("training", len(self.memory_being_filled.memory["state"]))
+            self.memory_being_trained.memory = self.memory_being_filled.copy()
+            self.memory_being_filled.clear()
+            self.train_model()
 
-        self.batch_being_trained = self.batch_being_filled.copy()
-        self.training = True  # Initiates next training thread
-
-        self.batch_being_filled = []
-
-    # TERMINATES LEARNING PROCESS
     def kill_brain(self):
+        """TERMINATES LEARNING PROCESS"""
         self.alive = False
-        self.thread.join()
