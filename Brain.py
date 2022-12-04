@@ -8,7 +8,7 @@ import tensorflow as tf
 class Brain:
     def __init__(self,
                  eyes_input_shape=(256, 256, 3),  # update to actual eye shape no resize
-                 ears_input_shape=(20, 17),  # update to actual ear shape
+                 ears_input_shape=(308, 310, 3),  # update to actual ear shape
                  lstm_timestep=10,
                  learning_rate=0.003,
                  action_space=10,
@@ -24,11 +24,11 @@ class Brain:
         self.loss_clip_parameter = 0.2
         self.entropy_coefficient = 0.001
         self.value_coefficient = 0.5
-        self.minibatch_size = 512
+        self.minibatch_size = 16
         self.learning_rate = learning_rate
         self.epsilon = 1e-5
 
-        self.model = Model()
+        self.model = Model(eyes_input_shape, ears_input_shape, action_space, learning_rate, self.epsilon, lstm_timestep)
 
     def train_model(self):
         """PPO LOSS FUNCTION"""
@@ -111,10 +111,10 @@ class Brain:
         UPDATE THE MODEL FIRST THOUGH
         SO THAT THE CURRENT MODEL BEING USED TO PREDICT IS THE LATEST COPY
         """
-        if len(self.memory_being_filled.memory["state"]) >= self.minibatch_size:  # do by batch
+        if len(self.memory_being_filled.memory["eyes"]) >= self.minibatch_size:  # do by batch
             # if self.memory_being_filled.memory["state"]:
             self.model.update_model()
-            print("training", len(self.memory_being_filled.memory["state"]))
+            print("training", len(self.memory_being_filled.memory["eyes"]))
             self.memory_being_trained.memory = self.memory_being_filled.copy()
             self.memory_being_filled.clear()
             self.train_model()

@@ -35,18 +35,34 @@ import gym
 # pred = wonderer((state, action))
 # print(pred)
 
-def shuffle(unit):
-    idx = [i for i in range(len(unit[0]))]
-    random.shuffle(idx)
+# def shuffle(unit):
+#     idx = [i for i in range(len(unit[0]))]
+#     random.shuffle(idx)
+#
+#     new_unit = [[] for i in range(len(unit))]
+#     for i in range(len(unit[0])):
+#         for j in range(len(unit)):
+#             new_unit[j].append(unit[j][idx[i]])
+#     return (new_unit)
+#
+# unit = [[1, 2, 3, 4], [1, 2, 3, 4], [1, 2,3, 4]]
+# shuffle(unit)
 
-    new_unit = [[] for i in range(len(unit))]
-    for i in range(len(unit[0])):
-        for j in range(len(unit)):
-            new_unit[j].append(unit[j][idx[i]])
-    return (new_unit)
+from PIL import Image
+import numpy as np
 
-unit = [[1, 2, 3, 4], [1, 2, 3, 4], [1, 2,3, 4]]
-shuffle(unit)
+eyes_input_shape = (256, 256, 3)
+number_of_eye_neurons = np.prod(list(eyes_input_shape))
+arr = np.random.random(size=(number_of_eye_neurons))
+arr = np.interp(arr, (0, 1), (0 , 255))
+arr = arr.astype('uint8')
+arr = arr.reshape(eyes_input_shape)
+print(arr)
+img = Image.fromarray(arr)
+print(arr.shape)
+print(img)
+img.show()
 
-
-
+img = img.resize((200, 200))
+print("newwww")
+img.show()

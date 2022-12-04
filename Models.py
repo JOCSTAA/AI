@@ -24,7 +24,7 @@ class ModelInstance:
 
         actor = Actor(self.action_space)
         critic = Critic(self.action_space)
-        wonder = Wonder(self.action_space)
+        wonder = Wonder(self.eyes_input_shape, self.ears_input_shape, self.action_space)
 
         actor.compile(optimizer=Adam(learning_rate=self.learning_rate, epsilon=1e-5))
         critic.compile(optimizer=Adam(learning_rate=self.learning_rate, epsilon=1e-5))
@@ -41,10 +41,10 @@ class ModelInstance:
 
         state = (np.array([eyes_time_sequence_observation]), np.array([ears_time_sequence_observation]))
 
-        action = actor(state)
+        dist = actor(state)
+        action = dist.sample()
         critic(state)
-        wonder_state = (state, action)
-        wonder(wonder_state)
+        wonder(state, action)
 
         return actor, critic, wonder
 
@@ -82,7 +82,6 @@ class Actor(keras.Model):
         self.actor_ear_conv.add(layers.TimeDistributed(layers.Conv2D(64, 5, activation="relu", padding="same")))
         self.actor_ear_conv.add(layers.TimeDistributed(layers.MaxPooling2D(pool_size=2, padding="same")))
         self.actor_ear_conv.add(layers.TimeDistributed(layers.Flatten()))
-        self.actor.add(layers.Dense(action_space, activation="tanh"))
 
         # LSTM
         self.actor_lstm1 = layers.LSTM(2, return_sequences=True)
@@ -164,6 +163,8 @@ class Critic(keras.Model):
 class Wonder(keras.Model):
     def __init__(self, eyes_input_shape, ears_input_shape, action_space):
         super(Wonder, self).__init__()
+        self.eyes_input_shape = eyes_input_shape
+        self.ears_input_shape = ears_input_shape
 
         # CONVOLUTION LAYERS
         self.wonder_eye_conv = keras.Sequential()
@@ -185,24 +186,34 @@ class Wonder(keras.Model):
         self.wonder_lstm2 = layers.LSTM(10, return_sequences=False)
 
         # DENSE
-        self.value_dense = keras.Sequential()
-        self.value_dense.add(layers.Dense(64, activation='relu'))
-        self.value_dense.add(layers.Dense(64, activation='relu'))
+        self.wonder_dense = keras.Sequential()
+        self.wonder_dense.add(layers.Dense(64, activation='relu'))
+        self.wonder_dense.add(layers.Dense(64, activation='relu'))
 
         # OUTPUT
-        self.value_output = layers.Dense(1)
+        number_of_eye_neurons = np.prod(list(eyes_input_shape))
+        number_of_ear_neurons = np.prod(list(ears_input_shape))
+        self.wonder_eyes_output = layers.Dense(number_of_eye_neurons, activation='relu')
+        self.wonder_ears_output = layers.Dense(number_of_ear_neurons, activation='relu')
 
     def __call__(self, observation, action):
+        def convert_output_to_image(arr, shape):
+            arr = np.interp(arr, (0, 1), (0, 255))
+            arr = arr.astype('uint8')
+            arr = arr.reshape(shape)
+            return arr
+
         eye_input = np.array(observation[0], dtype=np.float32)
         ear_input = np.array(observation[1], dtype=np.float32)
         action = np.array(action, dtype=np.float32)
 
         wonder_eye_conv, wonder_ear_conv = self.wonder_eye_conv(eye_input), self.wonder_ear_conv(ear_input)
         wonder_merged = layers.concatenate((wonder_eye_conv, wonder_ear_conv))
-        wonder_merged = layers.concatenate((wonder_merged, action))
         wonder_lstm1 = self.wonder_lstm1(wonder_merged)
         wonder_lstm2 = self.wonder_lstm2(wonder_lstm1)
-        wonder_dense = self.wonder_dense(wonder_lstm2)
-        wonder_output = self.wonder_output(wonder_dense)
+        wonder_merged = layers.concatenate((wonder_lstm2, action))
+        wonder_dense = self.wonder_dense(wonder_merged)
+        wonder_eye_output = convert_output_to_image(self.wonder_eyes_output(wonder_dense), self.eyes_input_shape)
+        wonder_ear_output = convert_output_to_image(self.wonder_ears_output(wonder_dense), self.ears_input_shape)
 
-        return wonder_output
+        return wonder_eye_output, wonder_ear_output

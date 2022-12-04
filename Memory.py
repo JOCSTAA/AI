@@ -49,9 +49,7 @@ class Memory:
         rewards = self.memory["discounted_reward"][start_index:end_index].copy()
         values = self.memory["value"][start_index:end_index].copy()
         disc_r = self.discount_rewards(rewards)
-        advantages = []
-        for i in range(len(disc_r)):
-            advantages.append(disc_r[i] - values[i][0])
+        advantages = np.subtract(disc_r, values)
 
         unit = self.memory["eyes"][start_index:end_index], \
                self.memory["ears"][start_index:end_index], \

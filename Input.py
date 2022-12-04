@@ -3,10 +3,12 @@ import Hear
 import numpy as np
 
 class Input():
-    def __init__(self, lstm_cnt):
+    def __init__(self, eyes_shape, ears_shape, lstm_cnt):
         self.eyes = cv2.VideoCapture(0)
         self.ears = Hear.Hear()
         self.ears.start_listening()
+        self.eyes_shape = eyes_shape
+        self.ears_shape = ears_shape
         self.lstm_cnt = lstm_cnt
         self.eyes_time_sequence_observation = []
         self.ears_time_sequence_observation = []
@@ -14,6 +16,9 @@ class Input():
     def observe(self):
         ret, image = self.eyes.read()
         audio = self.ears.read()
+
+        image = cv2.resize(image, self.eyes_shape)
+        audio = cv2.resize(audio, self.ears_shape)
         return [image, audio]
 
     def shape(self):
