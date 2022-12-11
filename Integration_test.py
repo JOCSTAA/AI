@@ -18,7 +18,7 @@ input_to_predict = inputs.collect_input()
 action = brain.predict(input_to_predict)
 outputs.act(action)
 
-# do this for ever
+# do this forever
 while True:
     begin = time.time()
     # print("new training")

@@ -3,6 +3,7 @@ from Memory import Memory
 
 import numpy as np
 import tensorflow as tf
+import random
 
 
 class Brain:
@@ -60,12 +61,9 @@ class Brain:
                     actor_loss = -tf.math.minimum(surrogate1, surrogate2)
                     actor_loss = tf.math.reduce_mean(actor_loss)
 
-                    v_loss = tf.square(value-old_value)
+                    v_loss = tf.square(value - old_value)
 
                     critic_loss = 0.5 * tf.reduce_mean(v_loss)
-
-                    entropy = dist_new.entropy()
-                    entropy_loss = tf.reduce_mean(entropy)
 
                 actor_params = actor.trainable_variables
                 actor_grads = tape.gradient(actor_loss, actor_params)
@@ -84,19 +82,20 @@ class Brain:
 
         TRY TO KEEP THIS TIME OPTIMIZED, THIS IS DONE IN REAL TIME
 
-        :param observation:
+        param observation:
         :return: action
         """
         eyes = observation[0]
         ears = observation[1]
         state = (np.array([eyes]), np.array([ears]))
         model = self.model.current_model
-        value, dist = model.critic(state), model.actor(state)
+        value = model.critic(state)
+        new_value, dist = self.think(state)
 
         action_sample = dist.sample()
         log_probs = dist.log_prob(action_sample)
 
-        # discounted_reward = compute_reward() # HAHA DEAL WITH THIS SHIII BOYYYYYYYY!
+        # discounted_reward = compute_reward() # IMPLEMENT REWARD ALGORITHM!
         discounted_reward = 1
 
         unit = [eyes, ears, action_sample[0].numpy(), log_probs[0].numpy(), discounted_reward, value[0][0].numpy()]
@@ -105,6 +104,71 @@ class Brain:
         action = action_sample.numpy()[0]
         return action
 
+    def think(self, observation):
+        """
+        USE THE CURRENT MODEL TO PREDICT THE REAL TIME STATES TAKING ACCOUNT PREDICTIONS OF FUTURE STATES.
+
+        SIMILAR TO PREDICT BUT USES THE WONDER MODEL, WHICH LEARNS TRANSITIONS, SUMS UP ALL THE PREDICTED ACTIONS AND
+        TAKES THE ACTION WITH THE HIGHEST PREDICTED VALUE
+
+        :param observation:
+        :return: action
+        """
+
+        def get_confidence(model_output) -> float: # IMPLEMENT CONFIDENCE
+            """
+            Derives the confidence of a model i.e. how sure the model is that the input will lead to that output
+
+            param model_output:
+            :return:
+            """
+
+            return 0.5
+
+        def get_random_bool_from_confidence(random_variable: float) -> bool:
+            """
+            Returns true or false given a random variable which is the confidence of that model
+
+            param random_variable:
+            :return:
+            """
+
+            return random.random() < random_variable
+
+        def helper(curr_state) -> tuple:
+            """
+            Recursively explores different action paths and output the path with the highest predicted reward
+
+            param curr_state:
+            :return:
+            """
+            explore_wider = True
+            values = []
+
+            while explore_wider:
+                curr_dist = model.actor(curr_state)
+                curr_action = curr_dist.sample().numpy()[0]
+                new_state = model.wonder(curr_state, curr_action)
+                curr_value = model.value(new_state)
+
+                certainty = get_confidence(new_state)
+                exploration = get_confidence(curr_dist)
+
+                explore_wider = get_random_bool_from_confidence(exploration)
+                explore_deeper = get_random_bool_from_confidence(certainty)
+
+                if explore_deeper:
+                    values.append((curr_value + helper(new_state), curr_dist))
+
+                else:
+                    values.append((curr_value, curr_dist))
+
+            values.sort(key=lambda x: x[0])
+            return values[0]
+
+        model = self.model.current_model
+        return helper(observation)
+
     def update_model(self):
         """
         PREVIOUS BATCH IS DONE TRAINING, TRAIN THE NEW BATCH:
@@ -112,7 +176,6 @@ class Brain:
         SO THAT THE CURRENT MODEL BEING USED TO PREDICT IS THE LATEST COPY
         """
         if len(self.memory_being_filled.memory["eyes"]) >= self.minibatch_size:  # do by batch
-            # if self.memory_being_filled.memory["state"]:
             self.model.update_model()
             print("training", len(self.memory_being_filled.memory["eyes"]))
             self.memory_being_trained.memory = self.memory_being_filled.copy()
