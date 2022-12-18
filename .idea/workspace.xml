@@ -4,12 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="7f2c407e-8cea-4d15-99d8-048b313a1319" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Brain.py" beforeDir="false" afterPath="$PROJECT_DIR$/Brain.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Integration_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/Integration_test.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Temp/MFCCs.png" beforeDir="false" afterPath="$PROJECT_DIR$/Temp/MFCCs.png" afterDir="false" />
-    </list>
+    <list default="true" id="7f2c407e-8cea-4d15-99d8-048b313a1319" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -36,7 +31,8 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "last_opened_file_path": "C:/Users/josho/Desktop/AI"
+    "last_opened_file_path": "C:/Users/josho/Desktop/AI",
+    "settings.editor.selected.configurable": "vcs.Git"
   }
 }]]></component>
   <component name="RecentsManager">
