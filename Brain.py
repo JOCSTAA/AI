@@ -13,6 +13,7 @@ class Brain:
                  lstm_timestep=10,
                  learning_rate=0.003,
                  action_space=10,
+                 minibatch_size=16,
                  epoch=5):
         self.epoch = epoch
         self.action_space = action_space
@@ -25,7 +26,7 @@ class Brain:
         self.loss_clip_parameter = 0.2
         self.entropy_coefficient = 0.001
         self.value_coefficient = 0.5
-        self.minibatch_size = 16
+        self.minibatch_size = minibatch_size
         self.learning_rate = learning_rate
         self.epsilon = 1e-5
 
@@ -53,6 +54,7 @@ class Brain:
                 with tf.GradientTape(persistent=True) as tape:
                     dist_new, value = actor(state), critic(state)
                     predicted_state = wonder(state, action_sample)
+                    print(predicted_state.shape, old_predicted_state.shape)
 
                     new_log_probs = dist_new.log_prob(action_sample)
 
@@ -125,15 +127,16 @@ class Brain:
         :return: action
         """
 
-        def get_confidence(model_output) -> float: # IMPLEMENT CONFIDENCE
+        def get_confidence(model_output) -> float:  # IMPLEMENT CONFIDENCE
             """
             Derives the confidence of a model i.e. how sure the model is that the input will lead to that output
+            higher = better chance
 
             param model_output:
             :return:
             """
 
-            return 0.5
+            return 0
 
         def get_random_bool_from_confidence(random_variable: float) -> bool:
             """
@@ -157,9 +160,16 @@ class Brain:
 
             while explore_wider:
                 curr_dist = model.actor(curr_state)
-                curr_action = curr_dist.sample().numpy()[0]
-                new_state = model.wonder(curr_state, curr_action)
-                curr_value = model.value(new_state)
+                curr_action = curr_dist.sample()
+                new_observation = model.wonder(curr_state, curr_action)
+
+                new_state_eyes = np.delete(curr_state[0], 0, 1)
+                new_state_eyes = np.append(new_state_eyes, [new_observation[0]], axis=1)
+                new_state_ears = np.delete(curr_state[1], 0, 1)
+                new_state_ears = np.append(new_state_ears, [new_observation[1]], axis=1)
+                new_state = (new_state_eyes, new_state_ears)
+
+                curr_value = model.critic(new_state)
 
                 certainty = get_confidence(new_state)
                 exploration = get_confidence(curr_dist)
@@ -168,16 +178,25 @@ class Brain:
                 explore_deeper = get_random_bool_from_confidence(certainty)
 
                 if explore_deeper:
-                    values.append((curr_value + helper(new_state), curr_dist))
+                    values.append((curr_value + helper(new_state)[0], curr_dist))
 
                 else:
                     values.append((curr_value, curr_dist))
 
-            values.sort(key=lambda x: x[0])
+            values.sort(key=lambda x: -x[0])
             return values[0]
 
         model = self.model.current_model
         return helper(observation)
+
+    def convert_wonder_output_to_image(self, observation):
+        ret = []
+        for arr in array:
+            arr = np.interp(arr, (0, 1), (0, 255))
+            arr = arr.astype('uint8')
+            arr = arr.reshape(shape)
+            ret.append(arr)
+        return np.array(ret)
 
     def update_model(self):
         """

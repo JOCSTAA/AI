@@ -196,11 +196,14 @@ class Wonder(keras.Model):
         self.wonder_ears_output = layers.Dense(number_of_ear_neurons, activation='relu')
 
     def __call__(self, observation, action):
-        def convert_output_to_image(arr, shape):
-            arr = np.interp(arr, (0, 1), (0, 255))
-            arr = arr.astype('uint8')
-            arr = arr.reshape(shape)
-            return arr
+        def convert_output_to_image(array, shape):
+            ret = []
+            for arr in array:
+                arr = np.interp(arr, (0, 1), (0, 255))
+                arr = arr.astype('uint8')
+                arr = arr.reshape(shape)
+                ret.append(arr)
+            return np.array(ret)
 
         eye_input = np.array(observation[0], dtype=np.float32)
         ear_input = np.array(observation[1], dtype=np.float32)
