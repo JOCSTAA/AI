@@ -5,7 +5,6 @@ import numpy as np
 import tensorflow_probability as tfp
 from tensorflow.keras.optimizers import Adam
 
-
 class ModelInstance:
     def __init__(self, eyes_input_shape, ears_input_shape, action_space, learning_rate, epsilon, lstm_timestep):
         self.eyes_input_shape = eyes_input_shape
