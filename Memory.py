@@ -22,6 +22,7 @@ class Memory:
         self.gamma = gamma
         self.lamda = 0.95
         self.clipped_reward = -10
+        self.wonder_remnant = None
 
     def store_in_memory(self, unit):
         eyes, ears, action_sample, log_probs, discounted_reward, value = unit
@@ -38,12 +39,28 @@ class Memory:
         start_index = 0
         end_index = minibatch_size
 
+        self.collect_wonder_data()
+
         while end_index < batch_size:
             yield self.extract_unit(start_index, end_index)
             start_index += minibatch_size
             end_index += minibatch_size
 
         yield self.extract_unit(start_index, batch_size)
+
+    def collect_wonder_data(self):
+        if self.wonder_remnant:
+            self.memory["eyes"] = [self.wonder_remnant[0]] + self.memory["eyes"]
+            self.memory["ears"] = [self.wonder_remnant[1]] + self.memory["ears"]
+
+        index = 1
+        while index < len(self.memory["eyes"]):
+            self.memory["new_eyes"].append(self.memory["eyes"][index])
+            self.memory["new_ears"].append(self.memory["ears"][index])
+
+            index += 1
+
+        self.wonder_remnant = [self.memory["eyes"][index - 1], self.memory["ears"][index - 1]]
 
     def extract_unit(self, start_index, end_index):
         rewards = self.memory["discounted_reward"][start_index:end_index].copy()
@@ -56,7 +73,7 @@ class Memory:
                self.memory["action_sample"][start_index:end_index], \
                self.memory["log_probs"][start_index:end_index], \
                advantages, \
-               values
+               values, self.memory["new_eyes"][start_index:end_index], self.memory["new_ears"][start_index:end_index]
 
         return shuffle(unit)
 
@@ -78,6 +95,8 @@ class Memory:
         self.memory["log_probs"] = []
         self.memory["discounted_reward"] = []
         self.memory["value"] = []
+        self.memory["new_eyes"] = []
+        self.memory["new_ears"] = []
 
     def copy(self):
         return copy.deepcopy(self.memory)

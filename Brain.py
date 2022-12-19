@@ -35,20 +35,24 @@ class Brain:
         """PPO LOSS FUNCTION"""
         for _ in range(self.epoch):
             for unit in self.memory_being_trained.yield_minibatches(self.minibatch_size):
-                eyes, ears, action_sample, old_log_probs, advantages, value = unit
+                eyes, ears, action_sample, old_log_probs, advantages, value, new_eyes, new_ears = unit
 
                 eyes = tf.convert_to_tensor(eyes)
                 ears = tf.convert_to_tensor(ears)
-                state = (eyes, ears)
                 action_sample = tf.convert_to_tensor(action_sample)
                 old_log_probs = tf.convert_to_tensor(old_log_probs)
                 advantages = tf.convert_to_tensor(advantages)
                 old_value = tf.convert_to_tensor(value)
+
+                state = (eyes, ears)
+                old_predicted_state = (new_eyes, new_ears)
+
                 model = self.model.model_in_training
-                actor, critic = model.actor, model.critic
+                actor, critic, wonder = model.actor, model.critic, model.wonder
 
                 with tf.GradientTape(persistent=True) as tape:
                     dist_new, value = actor(state), critic(state)
+                    predicted_state = wonder(state, action_sample)
 
                     new_log_probs = dist_new.log_prob(action_sample)
 
@@ -61,9 +65,11 @@ class Brain:
                     actor_loss = -tf.math.minimum(surrogate1, surrogate2)
                     actor_loss = tf.math.reduce_mean(actor_loss)
 
-                    v_loss = tf.square(value - old_value)
+                    critic_loss = tf.square(value - old_value)
+                    critic_loss = 0.5 * tf.reduce_mean(critic_loss)
 
-                    critic_loss = 0.5 * tf.reduce_mean(v_loss)
+                    wonder_loss = tf.square(predicted_state - old_predicted_state)
+                    wonder_loss = 0.5 * tf.reduce_mean(wonder_loss)
 
                 actor_params = actor.trainable_variables
                 actor_grads = tape.gradient(actor_loss, actor_params)
@@ -72,6 +78,10 @@ class Brain:
                 critic_params = critic.trainable_variables
                 critic_grads = tape.gradient(critic_loss, critic_params)
                 critic.optimizer.apply_gradients(zip(critic_grads, critic_params))
+
+                wonder_params = wonder.trainable_variables
+                wonder_grads = tape.gradient(wonder_loss, wonder_params)
+                wonder.optimizer.apply_gradients(zip(wonder_grads, wonder_params))
 
         # USE THE CURRENT MODEL TO PREDICT THE REAL TIME STATES
         # TRY TO KEEP THIS TIME OPTIMIZED, THIS IS DONE IN REAL TIME
