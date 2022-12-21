@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 
 
 def shuffle(unit):
+    print(len(unit[6]))
     idx = [i for i in range(len(unit[0]))]
     random.shuffle(idx)
 
@@ -18,13 +19,14 @@ def shuffle(unit):
 class Memory:
     def __init__(self, gamma=0.99):
         self.memory = {}
-        self.clear()
+        self.buffer = {}
         self.gamma = gamma
         self.lamda = 0.95
         self.clipped_reward = -10
-        self.wonder_remnant = []
+        self.clear()
 
     def store_in_memory(self, unit):
+        """Store the values collected in brain.Predict into the memory"""
         eyes, ears, action_sample, log_probs, discounted_reward, value = unit
 
         self.memory["eyes"].append(eyes)
@@ -35,6 +37,7 @@ class Memory:
         self.memory["value"].append(value)
 
     def yield_minibatches(self, minibatch_size):
+        """Collects the values to be trained from memory and releases them in a step size of minibatch_size"""
         batch_size = len(self.memory["eyes"]) - 1
         start_index = 0
         end_index = minibatch_size
@@ -48,7 +51,27 @@ class Memory:
 
         yield self.extract_unit(start_index, batch_size)
 
+    def extract_unit(self, start_index, end_index):
+        rewards = self.memory["discounted_reward"][start_index:end_index].copy()
+        values = self.memory["value"][start_index:end_index].copy()
+        disc_r = self.discount_rewards(rewards)
+        advantages = np.subtract(disc_r, values)
+
+        unit = self.memory["eyes"][start_index:end_index], \
+            self.memory["ears"][start_index:end_index], \
+            self.memory["action_sample"][start_index:end_index], \
+            self.memory["log_probs"][start_index:end_index], \
+            advantages, \
+            values, self.memory["new_eyes"][start_index:end_index], self.memory["new_ears"][start_index:end_index]
+
+        return shuffle(unit)
+
     def collect_wonder_data(self):
+        """
+        Processes the memory data for training the wonder model
+
+        Collects the t + 1 new state for every time step t
+        """
         self.collect_buffer()
         index = 1
         while index < len(self.memory["eyes"]):
@@ -59,26 +82,15 @@ class Memory:
 
     def collect_buffer(self):
         """collect left over data not taken in current training batch"""
-        pass
+        self.buffer = {}
+        for key, value in self.memory.items():
+            if key not in "new_eyes, new_ears":
+                self.buffer[key] = value[-1]
 
     def pass_buffer(self):
-        "add the collected buffer data to the newly refreshed memory"
-        pass
-
-    def extract_unit(self, start_index, end_index):
-        rewards = self.memory["discounted_reward"][start_index:end_index].copy()
-        values = self.memory["value"][start_index:end_index].copy()
-        disc_r = self.discount_rewards(rewards)
-        advantages = np.subtract(disc_r, values)
-
-        unit = self.memory["eyes"][start_index:end_index], \
-               self.memory["ears"][start_index:end_index], \
-               self.memory["action_sample"][start_index:end_index], \
-               self.memory["log_probs"][start_index:end_index], \
-               advantages, \
-               values, self.memory["new_eyes"][start_index:end_index], self.memory["new_ears"][start_index:end_index]
-
-        return shuffle(unit)
+        """add the collected buffer data to the newly refreshed memory"""
+        for key, value in self.buffer.items():
+            self.memory[key].append(self.buffer[key])
 
     def discount_rewards(self, reward_arr):
         running_add = 0
@@ -92,6 +104,7 @@ class Memory:
         return discounted_r
 
     def clear(self):
+        """clears the memory and passes in any data from buffer"""
         self.memory["eyes"] = []
         self.memory["ears"] = []
         self.memory["action_sample"] = []

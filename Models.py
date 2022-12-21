@@ -160,6 +160,13 @@ class Critic(keras.Model):
 
 
 class Wonder(keras.Model):
+    """
+    Wonder Model:
+    Predicts what the new state gotten from performing an action on a given state would be
+
+    Input = ((LSTM batch eyes images, LSTM batch ears images), Action_sample)
+    Output = (Single batch eye image, Single batch ear image)
+    """
     def __init__(self, eyes_input_shape, ears_input_shape, action_space):
         super(Wonder, self).__init__()
         self.eyes_input_shape = eyes_input_shape
