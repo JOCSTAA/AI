@@ -203,15 +203,6 @@ class Wonder(keras.Model):
         self.wonder_ears_output = layers.Dense(number_of_ear_neurons, activation='relu')
 
     def __call__(self, observation, action):
-        def convert_output_to_image(array, shape):
-            ret = []
-            for arr in array:
-                arr = np.interp(arr, (0, 1), (0, 255))
-                arr = arr.astype('uint8')
-                arr = arr.reshape(shape)
-                ret.append(arr)
-            return np.array(ret)
-
         eye_input = np.array(observation[0], dtype=np.float32)
         ear_input = np.array(observation[1], dtype=np.float32)
         action = np.array(action, dtype=np.float32)
@@ -222,7 +213,8 @@ class Wonder(keras.Model):
         wonder_lstm2 = self.wonder_lstm2(wonder_lstm1)
         wonder_merged = layers.concatenate((wonder_lstm2, action))
         wonder_dense = self.wonder_dense(wonder_merged)
-        wonder_eye_output = convert_output_to_image(self.wonder_eyes_output(wonder_dense), self.eyes_input_shape)
-        wonder_ear_output = convert_output_to_image(self.wonder_ears_output(wonder_dense), self.ears_input_shape)
+        wonder_eye_output = self.wonder_eyes_output(wonder_dense)
+        wonder_ear_output = self.wonder_ears_output(wonder_dense)
+        wonder_output = layers.concatenate((wonder_eye_output, wonder_ear_output))
 
-        return wonder_eye_output, wonder_ear_output
+        return wonder_output

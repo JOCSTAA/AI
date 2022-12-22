@@ -111,8 +111,7 @@ def test_brain():
 
     while True:
         action = brain.predict(input_to_predict)
-        print(action.shape)
-
+        print(action)
         brain.update_model()
 
 

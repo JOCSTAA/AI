@@ -46,7 +46,7 @@ class Brain:
                 old_value = tf.convert_to_tensor(value)
 
                 state = (eyes, ears)
-                old_predicted_state = (new_eyes, new_ears)
+                old_predicted_state = self.convert_image_to_wonder_output(new_eyes, new_ears)
 
                 model = self.model.model_in_training
                 actor, critic, wonder = model.actor, model.critic, model.wonder
@@ -54,7 +54,6 @@ class Brain:
                 with tf.GradientTape(persistent=True) as tape:
                     dist_new, value = actor(state), critic(state)
                     predicted_state = wonder(state, action_sample)
-                    print(predicted_state.shape, old_predicted_state.shape)
 
                     new_log_probs = dist_new.log_prob(action_sample)
 
@@ -99,7 +98,7 @@ class Brain:
         """
         eyes = observation[0]
         ears = observation[1]
-        state = (np.array([eyes]), np.array([ears]))
+        state = (np.array([eyes]), np.array([ears]))  # states batches up observation, turns it into a one unit batch
         model = self.model.current_model
         value = model.critic(state)
         new_value, dist = self.think(state)
@@ -162,12 +161,18 @@ class Brain:
                 curr_dist = model.actor(curr_state)
                 curr_action = curr_dist.sample()
                 new_observation = model.wonder(curr_state, curr_action)
+                new_observation = self.convert_wonder_output_to_image(new_observation)
 
-                new_state_eyes = np.delete(curr_state[0], 0, 1)
-                new_state_eyes = np.append(new_state_eyes, [new_observation[0]], axis=1)
-                new_state_ears = np.delete(curr_state[1], 0, 1)
-                new_state_ears = np.append(new_state_ears, [new_observation[1]], axis=1)
-                new_state = (new_state_eyes, new_state_ears)
+                curr_eye_state, curr_ear_state = curr_state
+                # curr_eye_state[0]: first element of batch( batch should only contain one element)
+
+                new_state_eyes = np.delete(curr_eye_state[0], 0, 0)
+                new_state_eyes = np.append(new_state_eyes, [new_observation[0][0]], axis=0)
+
+                new_state_ears = np.delete(curr_ear_state[0], 0, 0)
+                new_state_ears = np.append(new_state_ears, [new_observation[1][0]], axis=0)
+
+                new_state = ([new_state_eyes], [new_state_ears])
 
                 curr_value = model.critic(new_state)
 
@@ -189,13 +194,41 @@ class Brain:
         model = self.model.current_model
         return helper(observation)
 
-    def convert_wonder_output_to_image(self, observation):
+    def convert_wonder_output_to_image(self, wonder_output):
+        """
+        Takes in flattened one dimension layer of neurons and converts them to eyes and ears images
+
+        :param wonder_output: [batch, neurons]
+        :return: eyes[batch, l, w, h], ears[batch, l, w, h] (no lstm layer just single state image)
+        """
+        def helper(neurons, shape):
+            image = np.interp(neurons, (0, 1), (0, 255))
+            image = image.astype('uint8')
+            image = image.reshape(shape)
+            return np.array(image)
+
+        number_of_eye_neurons = np.prod(list(self.eyes_input_shape))  # move outside this so it only runs once
+        eyes_batch, ears_batch = [], []
+        for arr in wonder_output:
+            eye_neurons, ear_neurons = np.split(arr, [number_of_eye_neurons])
+            eye_image, ear_image = helper(eye_neurons, self.eyes_input_shape), helper(ear_neurons, self.ears_input_shape)
+            eyes_batch.append(eye_image), ears_batch.append(ear_image)
+        return eyes_batch, ears_batch
+
+    def convert_image_to_wonder_output(self, eyes, ears):
+        """
+        Takes in eyes and ears images and converts them to a flattened one dimension layer of neurons
+
+        :param eyes: [batch, lstm, l , w, h]
+        :param ears: [batch, lstm, l , w, h]
+        :return: [batch, neurons]
+        """
         ret = []
-        for arr in array:
-            arr = np.interp(arr, (0, 1), (0, 255))
-            arr = arr.astype('uint8')
-            arr = arr.reshape(shape)
-            ret.append(arr)
+        for index in range(len(eyes)):
+            eyes_image, ears_image = eyes[index], ears[index]
+            eye_neurons, ear_neurons = eyes_image.flatten(), ears_image.flatten()
+            wonder_output = np.concatenate((eye_neurons, ear_neurons))
+            ret.append(wonder_output)
         return np.array(ret)
 
     def update_model(self):
@@ -206,7 +239,7 @@ class Brain:
         """
         if len(self.memory_being_filled.memory["eyes"]) >= self.minibatch_size:  # do by batch
             self.model.update_model()
-            print("training", len(self.memory_being_filled.memory["eyes"]))
+            print("Training: Number of Inputs in batch = ", len(self.memory_being_filled.memory["eyes"]))
             self.memory_being_trained.memory = self.memory_being_filled.copy()
             self.memory_being_filled.clear()
             self.train_model()

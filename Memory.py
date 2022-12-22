@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 
 
 def shuffle(unit):
-    print(len(unit[6]))
     idx = [i for i in range(len(unit[0]))]
     random.shuffle(idx)
 
@@ -75,8 +74,8 @@ class Memory:
         self.collect_buffer()
         index = 1
         while index < len(self.memory["eyes"]):
-            self.memory["new_eyes"].append(self.memory["eyes"][index])
-            self.memory["new_ears"].append(self.memory["ears"][index])
+            self.memory["new_eyes"].append(self.memory["eyes"][index][-1])
+            self.memory["new_ears"].append(self.memory["ears"][index][-1])
 
             index += 1
 
