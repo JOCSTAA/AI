@@ -13,10 +13,14 @@ class Input():
         self.eyes_time_sequence_observation = []
         self.ears_time_sequence_observation = []
 
+        if len(self.eyes_shape) == 3:
+            self.eyes_shape = self.eyes_shape[:2]
+        if len(self.ears_shape) == 3:
+            self.ears_shape = self.ears_shape[:2]
+
     def observe(self):
         ret, image = self.eyes.read()
         audio = self.ears.read()
-
         image = cv2.resize(image, self.eyes_shape)
         audio = cv2.resize(audio, self.ears_shape)
         return [image, audio]

@@ -13,6 +13,7 @@ class Brain:
                  lstm_timestep=10,
                  learning_rate=0.003,
                  action_space=10,
+                 batch_size = 256,
                  minibatch_size=16,
                  epoch=5):
         self.epoch = epoch
@@ -26,14 +27,21 @@ class Brain:
         self.loss_clip_parameter = 0.2
         self.entropy_coefficient = 0.001
         self.value_coefficient = 0.5
+        self.batch_size = batch_size
         self.minibatch_size = minibatch_size
         self.learning_rate = learning_rate
         self.epsilon = 1e-5
+        self.in_transit = False
+        self.training = False
+
+        if batch_size < minibatch_size:
+            raise ValueError("minibatch cannot be greater than batch size")
 
         self.model = Model(eyes_input_shape, ears_input_shape, action_space, learning_rate, self.epsilon, lstm_timestep)
 
     def train_model(self):
         """PPO LOSS FUNCTION"""
+        self.training = True
         for _ in range(self.epoch):
             for unit in self.memory_being_trained.yield_minibatches(self.minibatch_size):
                 eyes, ears, action_sample, old_log_probs, advantages, value, new_eyes, new_ears = unit
@@ -84,6 +92,7 @@ class Brain:
                 wonder_grads = tape.gradient(wonder_loss, wonder_params)
                 wonder.optimizer.apply_gradients(zip(wonder_grads, wonder_params))
 
+        self.training = False
         # USE THE CURRENT MODEL TO PREDICT THE REAL TIME STATES
         # TRY TO KEEP THIS TIME OPTIMIZED, THIS IS DONE IN REAL TIME
 
@@ -96,24 +105,25 @@ class Brain:
         param observation:
         :return: action
         """
-        eyes = observation[0]
-        ears = observation[1]
-        state = (np.array([eyes]), np.array([ears]))  # states batches up observation, turns it into a one unit batch
-        model = self.model.current_model
-        value = model.critic(state)
-        new_value, dist = self.think(state)
+        if not self.in_transit:
+            eyes = observation[0]
+            ears = observation[1]
+            state = (np.array([eyes]), np.array([ears]))  # batches up observation, turns it into a one unit batch
+            model = self.model.current_model
+            value = model.critic(state)
+            new_value, dist = self.think(state)
 
-        action_sample = dist.sample()
-        log_probs = dist.log_prob(action_sample)
+            action_sample = dist.sample()
+            log_probs = dist.log_prob(action_sample)
 
-        # discounted_reward = compute_reward() # IMPLEMENT REWARD ALGORITHM!
-        discounted_reward = 1
+            # discounted_reward = compute_reward() # IMPLEMENT REWARD ALGORITHM!
+            discounted_reward = 1
 
-        unit = [eyes, ears, action_sample[0].numpy(), log_probs[0].numpy(), discounted_reward, value[0][0].numpy()]
-        self.memory_being_filled.store_in_memory(unit)
+            unit = [eyes, ears, action_sample[0].numpy(), log_probs[0].numpy(), discounted_reward, value[0][0].numpy()]
+            self.memory_being_filled.store_in_memory(unit)
 
-        action = action_sample.numpy()[0]
-        return action
+            action = action_sample.numpy()[0]
+            return action
 
     def think(self, observation):
         """
@@ -237,11 +247,13 @@ class Brain:
         UPDATE THE MODEL FIRST THOUGH
         SO THAT THE CURRENT MODEL BEING USED TO PREDICT IS THE LATEST COPY
         """
-        if len(self.memory_being_filled.memory["eyes"]) >= self.minibatch_size:  # do by batch
+        if len(self.memory_being_filled.memory["eyes"]) >= self.batch_size and not self.training:  # do by batch
+            self.in_transit = True
             self.model.update_model()
             print("Training: Number of Inputs in batch = ", len(self.memory_being_filled.memory["eyes"]))
             self.memory_being_trained.memory = self.memory_being_filled.copy()
             self.memory_being_filled.clear()
+            self.in_transit = False
             self.train_model()
 
     def kill_brain(self):

@@ -5,8 +5,8 @@ from threading import Thread
 import time
 
 lstm_cnt = 3
-eyes_shape = (200, 200)
-ears_shape = (200, 200)
+eyes_shape = (200, 200, 3)
+ears_shape = (200, 200, 3)
 outputs = Output.Output()
 inputs = Input.Input(eyes_shape, ears_shape, lstm_cnt)
 
