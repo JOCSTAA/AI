@@ -5,6 +5,16 @@ import numpy as np
 import tensorflow_probability as tfp
 from tensorflow.keras.optimizers import Adam
 
+convlayerNum1 = 8  # 32
+convlayerNum2 = 16  # 64
+convlayerFilterNum1 = 3  # 3
+convlayerFilterNum2 = 3  # 5
+LSTMlayerNum1 = 2  # 2
+LSTMlayerNum2 = 4  # 10
+DenselayerNum1 = 32  # 64
+DenselayerNum2 = 32  # 64
+
+
 class ModelInstance:
     def __init__(self, eyes_input_shape, ears_input_shape, action_space, learning_rate, epsilon, lstm_timestep):
         self.eyes_input_shape = eyes_input_shape
@@ -69,27 +79,31 @@ class Actor(keras.Model):
 
         # CONVOLUTION LAYERS
         self.actor_eye_conv = keras.Sequential()
-        self.actor_eye_conv.add(layers.TimeDistributed(layers.Conv2D(32, 3, activation="relu", padding="same")))
+        self.actor_eye_conv.add(layers.TimeDistributed(
+            layers.Conv2D(convlayerNum1, convlayerFilterNum1, activation="relu", padding="same")))
         self.actor_eye_conv.add(layers.TimeDistributed(layers.MaxPooling2D(pool_size=(2, 2), padding="same")))
-        self.actor_eye_conv.add(layers.TimeDistributed(layers.Conv2D(64, 5, activation="relu", padding="same")))
+        self.actor_eye_conv.add(layers.TimeDistributed(
+            layers.Conv2D(convlayerNum2, convlayerFilterNum2, activation="relu", padding="same")))
         self.actor_eye_conv.add(layers.TimeDistributed(layers.MaxPooling2D(pool_size=(2, 2), padding="same")))
         self.actor_eye_conv.add(layers.TimeDistributed(layers.Flatten()))
 
         self.actor_ear_conv = keras.Sequential()
-        self.actor_ear_conv.add(layers.TimeDistributed(layers.Conv2D(32, 3, activation="relu", padding="same")))
+        self.actor_ear_conv.add(layers.TimeDistributed(
+            layers.Conv2D(convlayerNum1, convlayerFilterNum1, activation="relu", padding="same")))
         self.actor_ear_conv.add(layers.TimeDistributed(layers.MaxPooling2D(pool_size=2, padding="same")))
-        self.actor_ear_conv.add(layers.TimeDistributed(layers.Conv2D(64, 5, activation="relu", padding="same")))
+        self.actor_ear_conv.add(layers.TimeDistributed(
+            layers.Conv2D(convlayerNum2, convlayerFilterNum2, activation="relu", padding="same")))
         self.actor_ear_conv.add(layers.TimeDistributed(layers.MaxPooling2D(pool_size=2, padding="same")))
         self.actor_ear_conv.add(layers.TimeDistributed(layers.Flatten()))
 
         # LSTM
-        self.actor_lstm1 = layers.LSTM(2, return_sequences=True)
-        self.actor_lstm2 = layers.LSTM(10, return_sequences=False)
+        self.actor_lstm1 = layers.LSTM(LSTMlayerNum1, return_sequences=True)
+        self.actor_lstm2 = layers.LSTM(LSTMlayerNum2, return_sequences=False)
 
         # DENSE
         self.actor_dense = keras.Sequential()
-        self.actor_dense.add(layers.Dense(64, activation='relu'))
-        self.actor_dense.add(layers.Dense(64, activation='relu'))
+        self.actor_dense.add(layers.Dense(DenselayerNum1, activation='relu'))
+        self.actor_dense.add(layers.Dense(DenselayerNum2, activation='relu'))
 
         # OUTPUT
         self.actor_mean = layers.Dense(action_space, activation='tanh')
@@ -120,27 +134,31 @@ class Critic(keras.Model):
 
         # CONVOLUTION LAYERS
         self.value_eye_conv = keras.Sequential()
-        self.value_eye_conv.add(layers.TimeDistributed(layers.Conv2D(32, 3, activation="relu", padding="same")))
+        self.value_eye_conv.add(layers.TimeDistributed(
+            layers.Conv2D(convlayerNum1, convlayerFilterNum1, activation="relu", padding="same")))
         self.value_eye_conv.add(layers.TimeDistributed(layers.MaxPooling2D(pool_size=(2, 2), padding="same")))
-        self.value_eye_conv.add(layers.TimeDistributed(layers.Conv2D(64, 5, activation="relu", padding="same")))
+        self.value_eye_conv.add(layers.TimeDistributed(
+            layers.Conv2D(convlayerNum2, convlayerFilterNum2, activation="relu", padding="same")))
         self.value_eye_conv.add(layers.TimeDistributed(layers.MaxPooling2D(pool_size=(2, 2), padding="same")))
         self.value_eye_conv.add(layers.TimeDistributed(layers.Flatten()))
 
         self.value_ear_conv = keras.Sequential()
-        self.value_ear_conv.add(layers.TimeDistributed(layers.Conv2D(32, 3, activation="relu", padding="same")))
+        self.value_ear_conv.add(layers.TimeDistributed(
+            layers.Conv2D(convlayerNum1, convlayerFilterNum1, activation="relu", padding="same")))
         self.value_ear_conv.add(layers.TimeDistributed(layers.MaxPooling2D(pool_size=2, padding="same")))
-        self.value_ear_conv.add(layers.TimeDistributed(layers.Conv2D(64, 5, activation="relu", padding="same")))
+        self.value_ear_conv.add(layers.TimeDistributed(
+            layers.Conv2D(convlayerNum2, convlayerFilterNum2, activation="relu", padding="same")))
         self.value_ear_conv.add(layers.TimeDistributed(layers.MaxPooling2D(pool_size=2, padding="same")))
         self.value_ear_conv.add(layers.TimeDistributed(layers.Flatten()))
 
         # LSTM
-        self.value_lstm1 = layers.LSTM(2, return_sequences=True)
-        self.value_lstm2 = layers.LSTM(10, return_sequences=False)
+        self.value_lstm1 = layers.LSTM(LSTMlayerNum1, return_sequences=True)
+        self.value_lstm2 = layers.LSTM(LSTMlayerNum2, return_sequences=False)
 
         # DENSE
         self.value_dense = keras.Sequential()
-        self.value_dense.add(layers.Dense(64, activation='relu'))
-        self.value_dense.add(layers.Dense(64, activation='relu'))
+        self.value_dense.add(layers.Dense(DenselayerNum1, activation='relu'))
+        self.value_dense.add(layers.Dense(DenselayerNum2, activation='relu'))
 
         # OUTPUT
         self.value_output = layers.Dense(1)
@@ -167,6 +185,7 @@ class Wonder(keras.Model):
     Input = ((LSTM batch eyes images, LSTM batch ears images), Action_sample)
     Output = (Single batch eye image, Single batch ear image)
     """
+
     def __init__(self, eyes_input_shape, ears_input_shape, action_space):
         super(Wonder, self).__init__()
         self.eyes_input_shape = eyes_input_shape
@@ -174,27 +193,31 @@ class Wonder(keras.Model):
 
         # CONVOLUTION LAYERS
         self.wonder_eye_conv = keras.Sequential()
-        self.wonder_eye_conv.add(layers.TimeDistributed(layers.Conv2D(32, 3, activation="relu", padding="same")))
+        self.wonder_eye_conv.add(layers.TimeDistributed(
+            layers.Conv2D(convlayerNum1, convlayerFilterNum1, activation="relu", padding="same")))
         self.wonder_eye_conv.add(layers.TimeDistributed(layers.MaxPooling2D(pool_size=(2, 2), padding="same")))
-        self.wonder_eye_conv.add(layers.TimeDistributed(layers.Conv2D(64, 5, activation="relu", padding="same")))
+        self.wonder_eye_conv.add(layers.TimeDistributed(
+            layers.Conv2D(convlayerNum2, convlayerFilterNum2, activation="relu", padding="same")))
         self.wonder_eye_conv.add(layers.TimeDistributed(layers.MaxPooling2D(pool_size=(2, 2), padding="same")))
         self.wonder_eye_conv.add(layers.TimeDistributed(layers.Flatten()))
 
         self.wonder_ear_conv = keras.Sequential()
-        self.wonder_ear_conv.add(layers.TimeDistributed(layers.Conv2D(32, 3, activation="relu", padding="same")))
+        self.wonder_ear_conv.add(layers.TimeDistributed(
+            layers.Conv2D(convlayerNum1, convlayerFilterNum1, activation="relu", padding="same")))
         self.wonder_ear_conv.add(layers.TimeDistributed(layers.MaxPooling2D(pool_size=2, padding="same")))
-        self.wonder_ear_conv.add(layers.TimeDistributed(layers.Conv2D(64, 5, activation="relu", padding="same")))
+        self.wonder_ear_conv.add(layers.TimeDistributed(
+            layers.Conv2D(convlayerNum2, convlayerFilterNum2, activation="relu", padding="same")))
         self.wonder_ear_conv.add(layers.TimeDistributed(layers.MaxPooling2D(pool_size=2, padding="same")))
         self.wonder_ear_conv.add(layers.TimeDistributed(layers.Flatten()))
 
         # LSTM
-        self.wonder_lstm1 = layers.LSTM(2, return_sequences=True)
-        self.wonder_lstm2 = layers.LSTM(10, return_sequences=False)
+        self.wonder_lstm1 = layers.LSTM(LSTMlayerNum1, return_sequences=True)
+        self.wonder_lstm2 = layers.LSTM(LSTMlayerNum2, return_sequences=False)
 
         # DENSE
         self.wonder_dense = keras.Sequential()
-        self.wonder_dense.add(layers.Dense(64, activation='relu'))
-        self.wonder_dense.add(layers.Dense(64, activation='relu'))
+        self.wonder_dense.add(layers.Dense(DenselayerNum1, activation='relu'))
+        self.wonder_dense.add(layers.Dense(DenselayerNum2, activation='relu'))
 
         # OUTPUT
         number_of_eye_neurons = np.prod(list(eyes_input_shape))

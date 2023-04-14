@@ -5,6 +5,8 @@ import numpy as np
 import tensorflow as tf
 import random
 
+print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
+
 
 class Brain:
     def __init__(self,
@@ -13,7 +15,7 @@ class Brain:
                  lstm_timestep=10,
                  learning_rate=0.003,
                  action_space=10,
-                 batch_size = 256,
+                 batch_size=256,
                  minibatch_size=16,
                  epoch=5):
         self.epoch = epoch
@@ -125,6 +127,45 @@ class Brain:
             action = action_sample.numpy()[0]
             return action
 
+    def predict_test(self, observation, env):
+        """
+        USE THE CURRENT MODEL TO PREDICT THE REAL TIME STATES.
+
+        TRY TO KEEP THIS TIME OPTIMIZED, THIS IS DONE IN REAL TIME
+
+        param observation:
+        :return: action
+        """
+        if not self.in_transit:
+            eyes = observation[0]
+            ears = observation[1]
+            state = (np.array([eyes]), np.array([ears]))  # batches up observation, turns it into a one unit batch
+            model = self.model.current_model
+            value = model.critic(state)
+            new_value, dist = self.think(state)
+
+            action_sample = dist.sample()
+            log_probs = dist.log_prob(action_sample)
+
+            action = action_sample.numpy()[0]
+
+            if action < -0.5:
+                actual_action = 0
+            elif action > 0.5:
+                actual_action = 2
+            else:
+                actual_action = 1
+
+            reward, _, _ = env.step(actual_action)
+
+            # discounted_reward = compute_reward() # IMPLEMENT REWARD ALGORITHM!
+            discounted_reward = reward
+
+            unit = [eyes, ears, action_sample[0].numpy(), log_probs[0].numpy(), discounted_reward, value[0][0].numpy()]
+            self.memory_being_filled.store_in_memory(unit)
+
+            return action
+
     def think(self, observation):
         """
         USE THE CURRENT MODEL TO PREDICT THE REAL TIME STATES TAKING ACCOUNT PREDICTIONS OF FUTURE STATES.
@@ -211,6 +252,7 @@ class Brain:
         :param wonder_output: [batch, neurons]
         :return: eyes[batch, l, w, h], ears[batch, l, w, h] (no lstm layer just single state image)
         """
+
         def helper(neurons, shape):
             image = np.interp(neurons, (0, 1), (0, 255))
             image = image.astype('uint8')
@@ -221,7 +263,8 @@ class Brain:
         eyes_batch, ears_batch = [], []
         for arr in wonder_output:
             eye_neurons, ear_neurons = np.split(arr, [number_of_eye_neurons])
-            eye_image, ear_image = helper(eye_neurons, self.eyes_input_shape), helper(ear_neurons, self.ears_input_shape)
+            eye_image, ear_image = helper(eye_neurons, self.eyes_input_shape), helper(ear_neurons,
+                                                                                      self.ears_input_shape)
             eyes_batch.append(eye_image), ears_batch.append(ear_image)
         return eyes_batch, ears_batch
 
@@ -250,7 +293,7 @@ class Brain:
         if len(self.memory_being_filled.memory["eyes"]) >= self.batch_size and not self.training:  # do by batch
             self.in_transit = True
             self.model.update_model()
-            print("Training: Number of Inputs in batch = ", len(self.memory_being_filled.memory["eyes"]))
+            # print("Training: Number of Inputs in batch = ", len(self.memory_being_filled.memory["eyes"]))
             self.memory_being_trained.memory = self.memory_being_filled.copy()
             self.memory_being_filled.clear()
             self.in_transit = False
