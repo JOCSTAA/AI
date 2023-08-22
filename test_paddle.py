@@ -1,8 +1,8 @@
 import numpy as np
 import cv2
 import pyautogui
-from test_environments.paddle import Paddle
-import Brain
+from test_environments.paddle.paddle import Paddle
+from brain.brain import Brain
 import time
 
 env = Paddle()
@@ -13,7 +13,7 @@ ybound = env.height - 23
 eye_shape = (ybound, xbound, 3)
 ear_shape = (1, 1, 3)
 
-brain = Brain.Brain(lstm_timestep=lstm_cnt, eyes_input_shape=eye_shape, ears_input_shape=ear_shape,
+brain = Brain(lstm_timestep=lstm_cnt, eyes_input_shape=eye_shape, ears_input_shape=ear_shape,
                     minibatch_size=64, batch_size=64, action_space=1, epoch = 5, learning_rate=0.01)
 
 
