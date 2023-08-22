@@ -1,3 +1,9 @@
+import sys
+import os
+current_dir = os.path.dirname(os.path.abspath(__file__))
+main_scope = os.path.join(current_dir, "..\..", "AI")
+sys.path.append(main_scope)
+
 import tensorflow.keras as keras
 import tensorflow as tf
 from tensorflow.keras import layers

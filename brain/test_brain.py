@@ -1,5 +1,5 @@
 import numpy as np
-import brain.brain as brain
+import brain as brain
 import time
 
 lstm_cnt = 3

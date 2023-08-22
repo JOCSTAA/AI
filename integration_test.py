@@ -1,4 +1,4 @@
-import Input
+from interface.inputs import input as Input
 import interface.outputs.output as output
 import brain.brain as brain
 from threading import Thread

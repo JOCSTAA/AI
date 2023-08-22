@@ -1,4 +1,10 @@
-import Speak
+import sys
+import os
+current_dir = os.path.dirname(os.path.abspath(__file__))
+main_scope = os.path.join(current_dir, "..\..\..", "AI")
+sys.path.append(main_scope)
+
+import interface.outputs.mouth.speak as Speak
 import numpy as np
 
 class Output():

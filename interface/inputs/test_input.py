@@ -1,4 +1,4 @@
-import Interface.Inputs.input as input
+import input as input
 from PIL import Image
 import numpy as np
 

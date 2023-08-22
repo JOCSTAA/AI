@@ -1,6 +1,13 @@
+import sys
+import os
+current_dir = os.path.dirname(os.path.abspath(__file__))
+main_scope = os.path.join(current_dir, "..\..\..", "AI")
+sys.path.append(main_scope)
+
 import cv2
-import Inputs.Ears.Hear as Hear
+import interface.inputs.ears.hear as Hear
 import numpy as np
+
 
 class Input():
     def __init__(self, eyes_shape, ears_shape, lstm_cnt):
