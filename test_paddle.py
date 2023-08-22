@@ -20,7 +20,7 @@ brain = Brain(lstm_timestep=lstm_cnt, eyes_input_shape=eye_shape, ears_input_sha
 def get_image():
     image = pyautogui.screenshot(region=(10, 33, xbound, ybound))
     image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
-    cv2.imwrite("image1.png", image)
+    cv2.imwrite("temp\image1.png", image)
     return image
 
 
