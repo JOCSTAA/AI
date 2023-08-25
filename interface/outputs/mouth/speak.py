@@ -30,6 +30,7 @@ class Speak():
     def start_speaking(self):
         self.talking = True
         self.thread = Thread(target=self.talk)
+        self.thread.daemon = True
         self.thread.start()
 
     def map_frequency(self, frequency):

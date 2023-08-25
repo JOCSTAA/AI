@@ -6,11 +6,15 @@ import time
 
 lstm_cnt = 3
 eyes_shape = (200, 200, 3)
-ears_shape = (200, 200, 3)
+ears_shape = (200, 200, 1)
 outputs = output.Output()
 inputs = Input.Input(eyes_shape, ears_shape, lstm_cnt)
 
-brain = brain.Brain(lstm_timestep=lstm_cnt, eyes_input_shape=inputs.shape()[0], ears_input_shape=inputs.shape()[1])
+brain = brain.Brain(lstm_timestep=lstm_cnt,
+                    eyes_input_shape=inputs.shape()[0],
+                    ears_input_shape=inputs.shape()[1],
+                    batch_size=2,
+                    minibatch_size=2)
 
 
 # initialize
