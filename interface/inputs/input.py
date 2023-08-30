@@ -13,13 +13,6 @@ from collections import deque
 
 class Input():
     def __init__(self, eyes_shape=(224, 224, 3), ears_shape=(224, 224, 1), lstm_cnt=3):
-
-        if len(eyes_shape) != 3:
-            raise ValueError(f"improper eyes image shape provided")
-            
-        if len(ears_shape) != 3:
-            raise ValueError(f"improper eyes image shape provided")
-
         self.eyes = See.See(image_size=ears_shape)
         self.ears = Hear.Hear(image_size=ears_shape)
 
@@ -28,7 +21,16 @@ class Input():
         self.lstm_cnt = lstm_cnt
         self.eyes_time_sequence_observation = deque(maxlen=lstm_cnt)
         self.ears_time_sequence_observation = deque(maxlen=lstm_cnt)
+        self.validateInputArguments()
         self._prime_inputs()
+
+    def validateInputArguments(self):
+        if len(self.eyes_shape) != 3:
+            raise ValueError(f"improper eyes image shape provided: {self.eyes_shape}")
+            
+        if len(self.ears_shape) != 3:
+            raise ValueError(f"improper eyes image shape provided: {self.ears_shape}")
+
 
     def _prime_inputs(self):
         for _ in range(self.lstm_cnt):

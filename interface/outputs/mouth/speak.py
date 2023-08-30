@@ -1,61 +1,76 @@
 import numpy as np
 from matplotlib import pyplot as plt
 import pyaudio
-from threading import Thread
+import librosa
+
 
 class Speak():
     def __init__(self,
-                 max_frquency=20000,
-                 min_frequency=20,
+                 mouth_shape=(512,512),
                  sample_rate=44000,
+                 channels=2,
                  number_of_samples_per_frame = 512):
-        self.max_frequency = max_frquency
-        self.min_frequency = min_frequency
-        self.duration = (1/sample_rate) * number_of_samples_per_frame
+        self.nn_output_shape = mouth_shape[0] * mouth_shape[1]
+        self.spectogram_frequency_bins = mouth_shape[0]
+        self.channels = channels
         self.sample_rate = sample_rate
         self.number_of_samples_per_frame = number_of_samples_per_frame
+        self.restart_playback = False
+        self.waveform_index = 0
         self.p = pyaudio.PyAudio()
+        self.waveform = self._silence_waveform()
+        self.talk()
 
     def talk(self):
+        def callback(_, frame_count, __, ___):
+            if self.restart_playback:
+                self.waveform_index = 0
+                self.restart_playback = False
+
+            audio_data = self.waveform[self.waveform_index:self.waveform_index + frame_count]
+            if len(audio_data) <= frame_count:
+                audio_data = np.concatenate((audio_data, self._silence_waveform()))
+
+            self.waveform_index += frame_count
+            
+            return (audio_data.tobytes(), pyaudio.paContinue)
+
         self.stream = self.p.open(format=pyaudio.paFloat32,
-                                  channels=1,
-                                  input= False,
+                                  channels=self.channels,
                                   rate=self.sample_rate,
+                                  input=True,
+                                  output=True,
                                   frames_per_buffer=self.number_of_samples_per_frame,
-                                  output=True)
+                                  stream_callback=callback)
+        
+    def write(self, nn_output):
+        self.validate_nn_output(nn_output)
+        self.waveform = self.process_audio(nn_output)
+        self.restart_playback = True
 
-        while self.talking:
-            self.stream.write(self.sound_wave)
+    def validate_nn_output(self, nn_output):
+        if nn_output is None:
+            raise ValueError(f"model output can not be empty, no output provided")
+        if nn_output.ndim != 1:
+            raise ValueError(f"Invalid output shape, ({self.nn_output_shape},) required {nn_output.shape} given")
+        if len(nn_output) != self.nn_output_shape:
+            raise ValueError(f"Invalid output size from model, {self.nn_output_shape} required {len(nn_output)} given")
+        if np.any(nn_output == None):
+            raise ValueError(f"Model output contains a none element")
 
-    def start_speaking(self):
-        self.talking = True
-        self.thread = Thread(target=self.talk)
-        self.thread.daemon = True
-        self.thread.start()
-
-    def map_frequency(self, frequency):
-        return np.interp(frequency, [0, 1], [self.min_frequency, self.max_frequency])
-
-    def generate_sine_wave(self, frequency, loudness):
-        frequency = self.map_frequency(frequency)
-        return loudness * (
-            np.sin(2 * np.pi * np.arange(self.sample_rate * self.duration) * frequency / self.sample_rate))
-
-    def add_all_sine_wave_frequencies_into_one_waveform(self, input):
-        sound_wave = self.generate_sine_wave(input[0], input[1])
-        for i in range(2, len(input), 2):
-            sine_wave = self.generate_sine_wave(input[i], input[i+1])
-            sound_wave = sound_wave + sine_wave
-
-        return sound_wave
-
-    #takes in input as tensor withing the range (0 to 1), converts input tensor to sound waveform and produces sound
-    def write(self, input):
-        self.sound_wave = self.add_all_sine_wave_frequencies_into_one_waveform(input).astype(np.float32).tobytes()
+    def process_audio(self, nn_output):
+        spectogram = nn_output.reshape(self.spectogram_frequency_bins, -1)
+        waveform = librosa.istft(spectogram)
+        return waveform
 
     def stop_speaking(self):
-        self.talking = False
-        self.thread.join()
         self.stream.stop_stream()
         self.stream.close()
         self.p.terminate()
+
+    def _silence_waveform(self):
+        return np.zeros(10000, dtype=np.float32)
+    
+    def speak_spectogram(self, spectogram):
+        self.waveform = librosa.istft(spectogram)
+        self.restart_playback = True

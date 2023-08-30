@@ -9,7 +9,7 @@ import interface.inputs.input as Input
 
 import unittest
 
-class TestEars(unittest.TestCase):
+class TestInputs(unittest.TestCase):
 
     def testIsCorrectShape(self):
         lstm_cnt = 3

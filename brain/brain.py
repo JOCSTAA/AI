@@ -119,7 +119,8 @@ class Brain:
             state = (np.array([eyes]), np.array([ears]))  # batches up observation, turns it into a one unit batch
             model = self.model.current_model
             value = model.critic(state)
-            new_value, dist = self.think(state)
+            new_value, dist = self.think(state) # with wonder
+            # dist = model.actor(state) # without wonder
 
             action_sample = dist.sample()
             log_probs = dist.log_prob(action_sample)
