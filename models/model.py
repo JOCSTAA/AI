@@ -10,6 +10,7 @@ from tensorflow.keras import layers
 import numpy as np
 import tensorflow_probability as tfp
 from tensorflow.keras.optimizers import Adam
+import models.embeddings.input_embedding as Embedder
 
 convlayerNum1 = 8  # 32
 convlayerNum2 = 16  # 64
@@ -84,23 +85,8 @@ class Actor(keras.Model):
         super(Actor, self).__init__()
 
         # CONVOLUTION LAYERS
-        self.actor_eye_conv = keras.Sequential()
-        self.actor_eye_conv.add(layers.TimeDistributed(
-            layers.Conv2D(convlayerNum1, convlayerFilterNum1, activation="relu", padding="same")))
-        self.actor_eye_conv.add(layers.TimeDistributed(layers.MaxPooling2D(pool_size=(2, 2), padding="same")))
-        self.actor_eye_conv.add(layers.TimeDistributed(
-            layers.Conv2D(convlayerNum2, convlayerFilterNum2, activation="relu", padding="same")))
-        self.actor_eye_conv.add(layers.TimeDistributed(layers.MaxPooling2D(pool_size=(2, 2), padding="same")))
-        self.actor_eye_conv.add(layers.TimeDistributed(layers.Flatten()))
-
-        self.actor_ear_conv = keras.Sequential()
-        self.actor_ear_conv.add(layers.TimeDistributed(
-            layers.Conv2D(convlayerNum1, convlayerFilterNum1, activation="relu", padding="same")))
-        self.actor_ear_conv.add(layers.TimeDistributed(layers.MaxPooling2D(pool_size=2, padding="same")))
-        self.actor_ear_conv.add(layers.TimeDistributed(
-            layers.Conv2D(convlayerNum2, convlayerFilterNum2, activation="relu", padding="same")))
-        self.actor_ear_conv.add(layers.TimeDistributed(layers.MaxPooling2D(pool_size=2, padding="same")))
-        self.actor_ear_conv.add(layers.TimeDistributed(layers.Flatten()))
+        self.actor_eye_conv = Embedder.ImageEmbedding(10)
+        self.actor_ear_conv = Embedder.ImageEmbedding(10)
 
         # LSTM
         self.actor_lstm1 = layers.LSTM(LSTMlayerNum1, return_sequences=True)
@@ -139,24 +125,8 @@ class Critic(keras.Model):
         super(Critic, self).__init__()
 
         # CONVOLUTION LAYERS
-        self.value_eye_conv = keras.Sequential()
-        self.value_eye_conv.add(layers.TimeDistributed(
-            layers.Conv2D(convlayerNum1, convlayerFilterNum1, activation="relu", padding="same")))
-        self.value_eye_conv.add(layers.TimeDistributed(layers.MaxPooling2D(pool_size=(2, 2), padding="same")))
-        self.value_eye_conv.add(layers.TimeDistributed(
-            layers.Conv2D(convlayerNum2, convlayerFilterNum2, activation="relu", padding="same")))
-        self.value_eye_conv.add(layers.TimeDistributed(layers.MaxPooling2D(pool_size=(2, 2), padding="same")))
-        self.value_eye_conv.add(layers.TimeDistributed(layers.Flatten()))
-
-        self.value_ear_conv = keras.Sequential()
-        self.value_ear_conv.add(layers.TimeDistributed(
-            layers.Conv2D(convlayerNum1, convlayerFilterNum1, activation="relu", padding="same")))
-        self.value_ear_conv.add(layers.TimeDistributed(layers.MaxPooling2D(pool_size=2, padding="same")))
-        self.value_ear_conv.add(layers.TimeDistributed(
-            layers.Conv2D(convlayerNum2, convlayerFilterNum2, activation="relu", padding="same")))
-        self.value_ear_conv.add(layers.TimeDistributed(layers.MaxPooling2D(pool_size=2, padding="same")))
-        self.value_ear_conv.add(layers.TimeDistributed(layers.Flatten()))
-
+        self.value_eye_conv = Embedder.ImageEmbedding(10)
+        self.value_ear_conv = Embedder.ImageEmbedding(10)
         # LSTM
         self.value_lstm1 = layers.LSTM(LSTMlayerNum1, return_sequences=True)
         self.value_lstm2 = layers.LSTM(LSTMlayerNum2, return_sequences=False)
@@ -198,23 +168,8 @@ class Wonder(keras.Model):
         self.ears_input_shape = ears_input_shape
 
         # CONVOLUTION LAYERS
-        self.wonder_eye_conv = keras.Sequential()
-        self.wonder_eye_conv.add(layers.TimeDistributed(
-            layers.Conv2D(convlayerNum1, convlayerFilterNum1, activation="relu", padding="same")))
-        self.wonder_eye_conv.add(layers.TimeDistributed(layers.MaxPooling2D(pool_size=(2, 2), padding="same")))
-        self.wonder_eye_conv.add(layers.TimeDistributed(
-            layers.Conv2D(convlayerNum2, convlayerFilterNum2, activation="relu", padding="same")))
-        self.wonder_eye_conv.add(layers.TimeDistributed(layers.MaxPooling2D(pool_size=(2, 2), padding="same")))
-        self.wonder_eye_conv.add(layers.TimeDistributed(layers.Flatten()))
-
-        self.wonder_ear_conv = keras.Sequential()
-        self.wonder_ear_conv.add(layers.TimeDistributed(
-            layers.Conv2D(convlayerNum1, convlayerFilterNum1, activation="relu", padding="same")))
-        self.wonder_ear_conv.add(layers.TimeDistributed(layers.MaxPooling2D(pool_size=2, padding="same")))
-        self.wonder_ear_conv.add(layers.TimeDistributed(
-            layers.Conv2D(convlayerNum2, convlayerFilterNum2, activation="relu", padding="same")))
-        self.wonder_ear_conv.add(layers.TimeDistributed(layers.MaxPooling2D(pool_size=2, padding="same")))
-        self.wonder_ear_conv.add(layers.TimeDistributed(layers.Flatten()))
+        self.wonder_eye_conv = Embedder.ImageEmbedding(10)
+        self.wonder_ear_conv = Embedder.ImageEmbedding(10)
 
         # LSTM
         self.wonder_lstm1 = layers.LSTM(LSTMlayerNum1, return_sequences=True)

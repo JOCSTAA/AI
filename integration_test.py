@@ -11,7 +11,7 @@ ears_shape = (200, 200, 1)
 action_space = 4096 # breaks at > 4096
 shape = int(math.sqrt(action_space))
 mouth_shape = (shape, shape) # factor of action_space
-outputs = output.Output(mouth_shape)
+outputs = output.Output(action_space, mouth_shape=mouth_shape)
 inputs = Input.Input(eyes_shape, ears_shape, lstm_cnt)
 
 brain = brain.Brain(lstm_timestep=lstm_cnt,

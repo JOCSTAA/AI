@@ -5,3 +5,5 @@
 # import torch
 
 # print(torch.cuda.is_available())
+
+import tensorflow_models as tfm
