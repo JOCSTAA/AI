@@ -124,18 +124,19 @@ class TransformerInputEmbedding(Model):
 
         self.input_embedding = InputEmbedding(self.model_dimension)
 
+    def get_angles(self, sequence_length, i, model_dimension):
+        angle_rates = 1 / np.power(10000, (2 * (i//2)) / np.float32(model_dimension))
+        return sequence_length * angle_rates
+
     def sin_positional_encoding(self, sequence_length, model_dimension):
-        position = np.arange(sequence_length)[:, np.newaxis]
-        div_term = np.exp(np.arange(0, model_dimension, 2)
-                          * -(np.log(10000.0) / model_dimension))
-        pos_enc = np.zeros(
-            (sequence_length, model_dimension), dtype=np.float32)
-
-        pos_enc[:, 0::2] = np.sin(position * div_term)
-        pos_enc[:, 1::2] = np.cos(position * div_term)
-
-        pos_enc = pos_enc[np.newaxis, ...]
-        self.pos_enc = pos_enc
+        angle_rads = self.get_angles(np.arange(sequence_length)[:, np.newaxis],
+                                np.arange(model_dimension)[np.newaxis, :],
+                                model_dimension)
+        angle_rads[:, 0::2] = np.sin(angle_rads[:, 0::2])
+        angle_rads[:, 1::2] = np.cos(angle_rads[:, 1::2])   
+        pos_encoding = angle_rads[np.newaxis, ...]
+            
+        self.pos_enc = pos_encoding
 
     def conc_positional_encoding(self, sequence_length):
         binary_indices = np.array([list(format(i, f'0{self.number_of_bits}b'))
