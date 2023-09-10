@@ -17,6 +17,7 @@ class Speak():
         self.number_of_samples_per_frame = number_of_samples_per_frame
         self.restart_playback = False
         self.waveform_index = 0
+
         self.p = pyaudio.PyAudio()
         self.waveform = self._silence_waveform()
         self.talk()
@@ -44,8 +45,12 @@ class Speak():
                                   stream_callback=callback)
         
     def write(self, nn_output):
-        self.validate_nn_output(nn_output)
-        self.waveform = self.process_audio(nn_output)
+        sequenced_waveform=[]
+        for nn_output_frame in nn_output:
+            self.validate_nn_output(nn_output_frame)
+            waveform = self.process_audio(nn_output_frame)
+            sequenced_waveform.extend(waveform)
+        self.waveform = sequenced_waveform
         self.restart_playback = True
 
     def validate_nn_output(self, nn_output):

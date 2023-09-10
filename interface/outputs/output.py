@@ -35,7 +35,7 @@ class Output():
     def act(self, nn_output):
         index = 0
         for output, size in self.output_sizes.items():
-            self.outputs[output].write(nn_output[index: index + size])
+            self.outputs[output].write(nn_output[:,index: index + size])
             index += size
 
     def close_outputs(self):

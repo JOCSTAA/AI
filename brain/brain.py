@@ -4,13 +4,14 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 main_scope = os.path.join(current_dir, "..\..", "AI")
 sys.path.append(main_scope)
 
-from models.model import Model
+from models.model import BrainModel as Model
 from memory.memory import Memory
 
 import numpy as np
 import tensorflow as tf
 import random
-
+from tensorflow.python.ops.numpy_ops import np_config
+np_config.enable_numpy_behavior()
 print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
 
 
@@ -18,20 +19,22 @@ class Brain:
     def __init__(self,
                  eyes_input_shape=(256, 256, 3),  # update to actual eye shape no resize
                  ears_input_shape=(308, 310, 3),  # update to actual ear shape
-                 lstm_timestep=10,
+                 sequence_length=10,
                  learning_rate=0.003,
                  action_space=10,
                  batch_size=256,
                  minibatch_size=16,
-                 epoch=5):
+                 epoch=5,
+                 wonder=True):
         self.epoch = epoch
         self.action_space = action_space
         self.eyes_input_shape = eyes_input_shape
         self.ears_input_shape = ears_input_shape
-        self.lstm_timestep = lstm_timestep
+        self.sequence_length = sequence_length
         self.memory_being_filled = Memory(gamma=0.99)
         self.memory_being_trained = Memory(gamma=0.99)
         self.alive = True
+        self.wonder = wonder
         self.loss_clip_parameter = 0.2
         self.entropy_coefficient = 0.001
         self.value_coefficient = 0.5
@@ -45,7 +48,7 @@ class Brain:
         if batch_size < minibatch_size:
             raise ValueError("minibatch cannot be greater than batch size")
 
-        self.model = Model(eyes_input_shape, ears_input_shape, action_space, learning_rate, self.epsilon, lstm_timestep)
+        self.model = Model(eyes_input_shape, ears_input_shape, action_space, sequence_length, learning_rate, self.epsilon)
 
     def train_model(self):
         """PPO LOSS FUNCTION"""
@@ -60,16 +63,16 @@ class Brain:
                 old_log_probs = tf.convert_to_tensor(old_log_probs)
                 advantages = tf.convert_to_tensor(advantages)
                 old_value = tf.convert_to_tensor(value)
+                new_eyes = tf.convert_to_tensor(new_eyes)
+                new_ears = tf.convert_to_tensor(new_ears)
 
                 state = (eyes, ears)
-                old_predicted_state = self.convert_image_to_wonder_output(new_eyes, new_ears)
 
                 model = self.model.model_in_training
                 actor, critic, wonder = model.actor, model.critic, model.wonder
 
                 with tf.GradientTape(persistent=True) as tape:
                     dist_new, value = actor(state), critic(state)
-                    predicted_state = wonder(state, action_sample)
 
                     new_log_probs = dist_new.log_prob(action_sample)
 
@@ -85,9 +88,6 @@ class Brain:
                     critic_loss = tf.square(value - old_value)
                     critic_loss = 0.5 * tf.reduce_mean(critic_loss)
 
-                    wonder_loss = tf.square(predicted_state - old_predicted_state)
-                    wonder_loss = 0.5 * tf.reduce_mean(wonder_loss)
-
                 actor_params = actor.trainable_variables
                 actor_grads = tape.gradient(actor_loss, actor_params)
                 actor.optimizer.apply_gradients(zip(actor_grads, actor_params))
@@ -96,9 +96,19 @@ class Brain:
                 critic_grads = tape.gradient(critic_loss, critic_params)
                 critic.optimizer.apply_gradients(zip(critic_grads, critic_params))
 
-                wonder_params = wonder.trainable_variables
-                wonder_grads = tape.gradient(wonder_loss, wonder_params)
-                wonder.optimizer.apply_gradients(zip(wonder_grads, wonder_params))
+                if self.wonder:
+                    old_predicted_state = self.convert_images_to_wonder_output(new_eyes, new_ears) #TODO
+                    with tf.GradientTape(persistent=True) as tape:
+                        dist_new, value = actor(state), critic(state)
+                        predicted_state = wonder([state, action_sample])
+
+                        wonder_loss = tf.square(predicted_state - old_predicted_state)
+                        wonder_loss = 0.5 * tf.reduce_mean(wonder_loss)
+
+
+                    wonder_params = wonder.trainable_variables
+                    wonder_grads = tape.gradient(wonder_loss, wonder_params)
+                    wonder.optimizer.apply_gradients(zip(wonder_grads, wonder_params))
 
         self.training = False
         # USE THE CURRENT MODEL TO PREDICT THE REAL TIME STATES
@@ -119,8 +129,10 @@ class Brain:
             state = (np.array([eyes]), np.array([ears]))  # batches up observation, turns it into a one unit batch
             model = self.model.current_model
             value = model.critic(state)
-            new_value, dist = self.think(state) # with wonder
-            # dist = model.actor(state) # without wonder
+            if self.wonder:
+                _, dist = self.think(state) # with wonder #TODO
+            else:
+                dist = model.actor(state) # without wonder
 
             action_sample = dist.sample()
             log_probs = dist.log_prob(action_sample)
@@ -194,102 +206,99 @@ class Brain:
             """
 
             return 0
-
-        def get_random_bool_from_confidence(random_variable: float) -> bool:
+        
+        def get_action_likelihood(action_prob_distribution, taken_action) -> float:
             """
-            Returns true or false given a random variable which is the confidence of that model
+            Calculates a measure of how likely the sample is according to the distribution.
+            A higher log-likelihood indicates a higher likelihood of the sample being generated by the distribution.
+            Higher likelihood = lower chance of exploring other options.
+
+            :param action_prob_distribution: Probability distribution of actions
+            :param taken_action: The action that was taken
+            :return: prob_to_explore_wider: value from 0 - 1
+            """
+            log_prob = action_prob_distribution.log_prob(taken_action)
+            average_probability = tf.reduce_mean(tf.exp(log_prob)).numpy()
+
+            return average_probability
+            return 1 - average_probability # actual return but it currently will while explore_wider() run forever#TODO
+
+        def get_bool_from_probability(random_variable: float) -> bool:
+            """
+            Returns true or false given a random variable
 
             param random_variable:
-            :return:
+            :return: bool
             """
 
             return random.random() < random_variable
 
-        def helper(curr_state) -> tuple:
+        def explore_future_actions(curr_state) -> tuple:
             """
-            Recursively explores different action paths and output the path with the highest predicted reward
+            Recursively explores different action paths and outputs the path with the highest predicted reward.
 
-            param curr_state:
-            :return:
+            :param curr_state: The current state
+            :return: The best action path's value and the corresponding action distribution
             """
             explore_wider = True
             values = []
 
             while explore_wider:
-                curr_dist = model.actor(curr_state)
-                curr_action = curr_dist.sample()
-                new_observation = model.wonder(curr_state, curr_action)
+                dist = model.actor(curr_state)
+                action = model.actor(curr_state).sample()
+                new_observation = model.wonder([curr_state, action])
                 new_observation = self.convert_wonder_output_to_image(new_observation)
 
-                curr_eye_state, curr_ear_state = curr_state
-                # curr_eye_state[0]: first element of batch( batch should only contain one element)
+                curr_value = model.critic(new_observation)
 
-                new_state_eyes = np.delete(curr_eye_state[0], 0, 0)
-                new_state_eyes = np.append(new_state_eyes, [new_observation[0][0]], axis=0)
+                certainty = get_confidence(new_observation)
+                exploration = get_action_likelihood(dist, action)
 
-                new_state_ears = np.delete(curr_ear_state[0], 0, 0)
-                new_state_ears = np.append(new_state_ears, [new_observation[1][0]], axis=0)
-
-                new_state = ([new_state_eyes], [new_state_ears])
-
-                curr_value = model.critic(new_state)
-
-                certainty = get_confidence(new_state)
-                exploration = get_confidence(curr_dist)
-
-                explore_wider = get_random_bool_from_confidence(exploration)
-                explore_deeper = get_random_bool_from_confidence(certainty)
+                explore_wider = get_bool_from_probability(exploration)
+                explore_deeper = get_bool_from_probability(certainty)
 
                 if explore_deeper:
-                    values.append((curr_value + helper(new_state)[0], curr_dist))
+                    values.append((curr_value + explore_future_actions(new_observation)[0], dist))
 
                 else:
-                    values.append((curr_value, curr_dist))
+                    values.append((curr_value, dist))
 
             values.sort(key=lambda x: -x[0])
             return values[0]
 
         model = self.model.current_model
-        return helper(observation)
-
+        return explore_future_actions(observation)
+    
     def convert_wonder_output_to_image(self, wonder_output):
         """
-        Takes in flattened one dimension layer of neurons and converts them to eyes and ears images
+        Takes in output of neural network and converts them to eyes and ears images
 
-        :param wonder_output: [batch, neurons]
-        :return: eyes[batch, l, w, h], ears[batch, l, w, h] (no lstm layer just single state image)
+        :param wonder_output: nn_ouput [batch, sequence, output_vectors]
+        :return: eye_images[batch, sequence, l, w, h], ear_images[batch, sequence, l, w, h]
         """
+        batch_size, sequence_length, _ = wonder_output.shape
+        eyes_vector_size = np.prod(self.eyes_input_shape)
 
-        def helper(neurons, shape):
-            image = np.interp(neurons, (0, 1), (0, 255))
-            image = image.astype('uint8')
-            image = image.reshape(shape)
-            return np.array(image)
+        eye_images = wonder_output[:, :, :eyes_vector_size].reshape((batch_size, sequence_length) + self.eyes_input_shape)
+        ear_images = wonder_output[:, :, eyes_vector_size:].reshape((batch_size, sequence_length) + self.ears_input_shape)
 
-        number_of_eye_neurons = np.prod(list(self.eyes_input_shape))  # move outside this so it only runs once
-        eyes_batch, ears_batch = [], []
-        for arr in wonder_output:
-            eye_neurons, ear_neurons = np.split(arr, [number_of_eye_neurons])
-            eye_image, ear_image = helper(eye_neurons, self.eyes_input_shape), helper(ear_neurons,
-                                                                                      self.ears_input_shape)
-            eyes_batch.append(eye_image), ears_batch.append(ear_image)
-        return eyes_batch, ears_batch
+        return eye_images, ear_images
 
-    def convert_image_to_wonder_output(self, eyes, ears):
+    def convert_images_to_wonder_output(self, eyes, ears):
         """
         Takes in eyes and ears images and converts them to a flattened one dimension layer of neurons
 
-        :param eyes: [batch, lstm, l , w, h]
-        :param ears: [batch, lstm, l , w, h]
-        :return: [batch, neurons]
+        :param eyes: [batch, sequence, l , w, h]
+        :param ears: [batch, sequence, l , w, h]
+        :return: [batch, sequence, neurons]
         """
-        ret = []
-        for index in range(len(eyes)):
-            eyes_image, ears_image = eyes[index], ears[index]
-            eye_neurons, ear_neurons = eyes_image.flatten(), ears_image.flatten()
-            wonder_output = np.concatenate((eye_neurons, ear_neurons))
-            ret.append(wonder_output)
-        return np.array(ret)
+        batch, sequence_length, _, _, _ = eyes.shape
+
+        eyes_flattened = eyes.reshape((batch, sequence_length, -1))
+        ears_flattened = ears.reshape((batch, sequence_length, -1))
+        output_vector = np.concatenate((eyes_flattened, ears_flattened), axis=-1)
+
+        return output_vector
 
     def update_model(self):
         """

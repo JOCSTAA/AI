@@ -4,22 +4,24 @@ import brain.brain as brain
 from threading import Thread
 import time
 import math
+import numpy as np
 
-lstm_cnt = 3
-eyes_shape = (200, 200, 3)
-ears_shape = (200, 200, 1)
-action_space = 4096 # breaks at > 4096
-shape = int(math.sqrt(action_space))
-mouth_shape = (shape, shape) # factor of action_space
+sequence_length = 3
+eyes_shape = (4, 4, 3)
+ears_shape = (4, 4, 1)
+shape = 128
+mouth_shape = (shape, shape) 
+action_space = shape * shape # breaks at > 4096 # factor of mouth_shape
 outputs = output.Output(action_space, mouth_shape=mouth_shape)
-inputs = Input.Input(eyes_shape, ears_shape, lstm_cnt)
+inputs = Input.Input(eyes_shape, ears_shape, sequence_length)
 
-brain = brain.Brain(lstm_timestep=lstm_cnt,
+brain = brain.Brain(sequence_length=sequence_length,
                     eyes_input_shape=inputs.shape()[0],
                     ears_input_shape=inputs.shape()[1],
                     action_space=action_space,
                     batch_size=2,
-                    minibatch_size=2)
+                    minibatch_size=2,
+                    wonder=True)
 
 
 # initialize
@@ -34,7 +36,8 @@ while True:
     # start a new thread for each new training session
     input_to_predict = inputs.collect_input()
     action = brain.predict(input_to_predict)
-    print(action)
+    # print(action)
+    # print(action.shape)
     outputs.act(action)
     print("training")
 

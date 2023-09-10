@@ -74,8 +74,8 @@ class Memory:
         self.collect_buffer()
         index = 1
         while index < len(self.memory["eyes"]):
-            self.memory["new_eyes"].append(self.memory["eyes"][index][-1])
-            self.memory["new_ears"].append(self.memory["ears"][index][-1])
+            self.memory["new_eyes"].append(self.memory["eyes"][index])
+            self.memory["new_ears"].append(self.memory["ears"][index])
 
             index += 1
 
