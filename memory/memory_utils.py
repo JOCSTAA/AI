@@ -58,6 +58,7 @@ def yield_minibatches(memory):
     minibatch_size = memory.minibatch_size
 
     data = {key: np.array(val) for key, val in memory.memory_being_trained.items()}
+    advantages = _collect_advantages(data["rewards"], data["values"], memory.gamma)
     batch_size = len(data["eyes"]) - 1
     indices = np.arange(batch_size)
     np.random.shuffle(indices)
@@ -71,7 +72,7 @@ def yield_minibatches(memory):
             data["ears"][minibatch_indices],
             data["action_samples"][minibatch_indices],
             data["log_probs"][minibatch_indices],
-            _collect_advantages(data["rewards"], data["values"], minibatch_indices, memory.gamma),
+            advantages[minibatch_indices],
             data["values"][minibatch_indices],
             data["new_eyes"][minibatch_indices],
             data["new_ears"][minibatch_indices]
@@ -79,14 +80,11 @@ def yield_minibatches(memory):
 
         yield minibatch
 
-def _collect_advantages(rewards, values, indices, gamma):
+def _collect_advantages(batched_rewards, batched_values, gamma):
     """
     Converts the collected rewards and values to advantages, used for 
-    PPO loss while maintaining their shuffled order
+    PPO loss
     """
-    batched_rewards = rewards[indices]
-    batched_values = values[indices]
-
     running_add = 0
     discounted_r = np.empty_like(batched_rewards, dtype="float32")
     for i in range(len(batched_rewards)):
