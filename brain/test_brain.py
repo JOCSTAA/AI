@@ -1,32 +1,26 @@
-import numpy as np
+import sys
+import os
+current_dir = os.path.dirname(os.path.abspath(__file__))
+main_scope = os.path.join(current_dir, "..\..", "AI")
+sys.path.append(main_scope)
+
+from interface.inputs import input as Input
+import interface.outputs.output as output
 import brain as brain
-import time
 
-lstm_cnt = 3
-eye_shape = (200, 200, 3)
-ear_shape = (200, 200, 3)
+sequence_length = 3
+eyes_shape = (4, 4, 3)
+ears_shape = (4, 4, 1)
+shape = 128
+mouth_shape = (shape, shape) 
+action_space = shape * shape # breaks at > 4096 # factor of mouth_shape
+outputs = output.Output(action_space, mouth_shape=mouth_shape)
+inputs = Input.Input(eyes_shape, ears_shape, sequence_length)
 
-brain = brain.Brain(lstm_timestep=lstm_cnt, eyes_input_shape=eye_shape, ears_input_shape=ear_shape,
-                         minibatch_size=5, batch_size=20)
+brain = brain.Brain(inputs,
+                    outputs,
+                    sequence_length,
+                    action_space,
+                    )
 
-random_eye_array = np.random.randint(low=0, high=255, size=eye_shape)
-random_ear_array = np.random.randint(low=0, high=255, size=ear_shape)
-eyes_time_sequence_observation = []
-ears_time_sequence_observation = []
-
-for _ in range(lstm_cnt):
-    eyes_time_sequence_observation.append(random_eye_array)
-    ears_time_sequence_observation.append(random_ear_array)
-
-input_to_predict = (np.array(eyes_time_sequence_observation), np.array(ears_time_sequence_observation))
-
-while True:
-    begin = time.time()
-
-    action = brain.predict(input_to_predict)
-    print(action)
-    brain.update_model()
-
-    end = time.time()
-    duration = end - begin
-    print("time taken :", duration, " seconds")
+brain.run()

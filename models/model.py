@@ -4,32 +4,79 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 main_scope = os.path.join(current_dir, "..\..", "AI")
 sys.path.append(main_scope)
 
-import tensorflow.keras as keras
+from models import model_utils
+from memory.memory import Memory
 import tensorflow as tf
-from tensorflow.keras import layers, Model, Sequential
+from tensorflow.keras import Model, Sequential
 from tensorflow.keras.layers import Dense, concatenate
 import numpy as np
 import tensorflow_probability as tfp
 from tensorflow.keras.optimizers import Adam
 from models.transformers.transformer import Transformer
+from tensorflow.python.ops.numpy_ops import np_config
+np_config.enable_numpy_behavior()
 
 
 _MODEL_DIMENSION = 20
 _WONDER_HIDDEN_DIMENSION = 1024
+_TRAINING_BATCH_SIZE = 5
+_EPOCH = 10
+_MIN_BATCH_REQUIRED_TO_TRAIN = 5
+_EPSILON = 1e-5
+_LEARNING_RATE=0.003
+_GAMMA=0.99
 
 class BrainModel:
-    def __init__(self, eyes_input_shape, ears_input_shape, action_space, sequence_length, learning_rate, epsilon):
+    def __init__(self, 
+                 eyes_input_shape, 
+                 ears_input_shape, 
+                 action_space, 
+                 sequence_length, 
+                 learning_rate=_LEARNING_RATE, 
+                 epsilon=_EPSILON,
+                 add_wonder=True,
+                 reward_function=None,
+                 min_batch_required_to_train=_MIN_BATCH_REQUIRED_TO_TRAIN,
+                 epoch=_EPOCH,
+                 training_batch_size=_TRAINING_BATCH_SIZE
+                 ):
+        self.add_wonder=add_wonder
+        self.reward_function=reward_function
+        self.min_batch_required_to_train=min_batch_required_to_train
+        self.epoch=epoch
+        self.eyes_input_shape=eyes_input_shape
+        self.ears_input_shape=ears_input_shape
+        
+        if not training_batch_size:
+            self.training_batch_size=min_batch_required_to_train
+        else:
+            self.training_batch_size=training_batch_size
+        if min_batch_required_to_train < training_batch_size:
+            raise ValueError("training batch size per epoch should be less than minimum batch size required to train, training batch size given {training_batch_size}, minimum batch amount required to train {min_batch_required_to_train}")
+
         self.model_in_training = ModelInstance(eyes_input_shape, ears_input_shape, action_space, sequence_length,
                                                learning_rate, epsilon)
         self.current_model = ModelInstance(eyes_input_shape, ears_input_shape, action_space, sequence_length,
                                            learning_rate, epsilon)
+        
+        self.memory = Memory(minibatch_size=self.training_batch_size, 
+                             gamma=_GAMMA)
 
     def update_model(self):
-        """APPLIES LEARNT MODEL ATTRIBUTES TO CURRENT MODEL"""
+        model_utils.update_model(self)
 
-        self.current_model.actor.set_weights(self.model_in_training.actor.get_weights())
-        self.current_model.wonder.set_weights(self.model_in_training.wonder.get_weights())
-        self.current_model.critic.set_weights(self.model_in_training.critic.get_weights())
+    def predict(self, observation):
+        prediction = model_utils.predict(self, observation)
+        return prediction
+    
+    def train_model_from_saved_data(self):
+        pass
+
+    def save_model(self, file_location=None):
+        model_utils.save_model(self, file_location)
+
+    def load_model_from_save(self, file_location=None):
+        model_utils.load_model(self, file_location)
 
 
 class ModelInstance:
@@ -57,18 +104,7 @@ class ModelInstance:
         critic.compile(optimizer=Adam(learning_rate=self.learning_rate, epsilon=1e-5))
         wonder.compile(optimizer=Adam(learning_rate=self.learning_rate, epsilon=1e-5))
 
-        x,y,z = self.eyes_input_shape
-        random_eye_array = np.random.rand(x, y, z) * 255.0
-        x,y,z = self.ears_input_shape
-        random_ear_array = np.random.rand(x, y, z) * 255.0
-
-        eyes_time_sequence_observation = []
-        ears_time_sequence_observation = []
-        for _ in range(self.sequence_length):
-            eyes_time_sequence_observation.append(random_eye_array)
-            ears_time_sequence_observation.append(random_ear_array)
-
-        state = (np.array([eyes_time_sequence_observation]), np.array([ears_time_sequence_observation]))
+        state = model_utils.instantiate_model_state(self)
 
         dist = actor(state)
         action = dist.sample()
@@ -98,7 +134,8 @@ class IndividualModel(Model):
             self.log_std = tf.Variable(shape=(1, action_space), trainable=True,
                                    initial_value=tf.zeros(shape=(1, action_space)))
 
-    def __call__(self, inputs):        
+    def __call__(self, inputs):
+        # wonder        
         if self.wonder:
             observation, actions = inputs
             model_output = self.model(observation)
@@ -107,6 +144,7 @@ class IndividualModel(Model):
 
             return out
 
+        # actor
         if self.ppo_loss:
             model_output = self.model(inputs)
 
@@ -116,4 +154,7 @@ class IndividualModel(Model):
             dist = tfp.distributions.MultivariateNormalDiag(loc=mean, scale_diag=scale)
 
             return dist
-        return self.model(inputs)
+        
+        # critic
+        out = tf.reduce_mean(self.model(inputs))
+        return out

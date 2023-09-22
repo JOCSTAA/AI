@@ -56,5 +56,5 @@ class Input():
     def shape(self):
         return self.eyes_shape, self.ears_shape
 
-    def collect_input(self):
+    def collect_inputs(self):
         return(self._collect_image(), self._collect_audio())
